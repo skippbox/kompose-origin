@@ -1,0 +1,28 @@
+#!/bin/sh
+
+source "$(dirname "$BASH_SOURCE")/.validate"
+
+folders=$(find * -type d | egrep -v '^Godeps|bundles|.git')
+
+IN_MARK=$(grep -r "^<<<<<<<" $folders)
+if [ $? -eq 0 ]; then
+	echo "-- Git conflict marks have been found, please correct them :"
+	echo "$IN_MARK"
+	return false
+fi
+
+OUT_MARK=$(grep -r "^>>>>>>>" $folders)
+if [ $? -eq 0 ]; then
+	echo "-- Git conflict marks have been found, please correct them :"
+	echo "$OUT_MARK"
+	return false
+fi
+
+SEPARATE_MARK=$(grep -r "^=======$" $folders)
+if [ $? -eq 0 ]; then
+	echo "-- Git conflict marks have been found, please correct them :"
+	echo "$SEPARATE_MARK"
+	return false
+fi
+
+echo "Congratulations : no git conflict marks have been found!"
