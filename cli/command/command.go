@@ -176,7 +176,6 @@ func KillCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
-// tuna
 func KuberCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "kuber",
@@ -194,7 +193,6 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 		},
 	}
 }
-// end tuna
 
 func CommonFlags() []cli.Flag {
 	return []cli.Flag{

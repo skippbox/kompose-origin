@@ -11,13 +11,11 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/docker/libcompose/project"
 
-	// tuna
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 
 	"k8s.io/kubernetes/pkg/api"
-	// end tuna
 )
 
 type ProjectAction func(project *project.Project, c *cli.Context)
@@ -59,7 +57,6 @@ func ProjectPs(p *project.Project, c *cli.Context) {
 	os.Stdout.WriteString(allInfo.String())
 }
 
-// tuna
 func ProjectKuber(p *project.Project, c *cli.Context) {
 	outputDir := c.String("output")
 	composeFile := c.String("file")
@@ -144,7 +141,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		fmt.Println(outputFilePath)
 	}
 }
-// end tuna
 
 func ProjectPort(p *project.Project, c *cli.Context) {
 	if len(c.Args()) != 2 {
