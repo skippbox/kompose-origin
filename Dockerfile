@@ -11,6 +11,10 @@ RUN go get github.com/mitchellh/gox
 RUN go get github.com/aktau/github-release
 RUN go get github.com/tools/godep
 RUN go get golang.org/x/tools/cmd/cover
+#tuna
+RUN go get k8s.io/kubernetes/pkg/api
+RUN go get golang.org/x/crypto/ssh
+#end tuna
 
 # Which docker version to test on
 ENV DOCKER_VERSION 1.7.1

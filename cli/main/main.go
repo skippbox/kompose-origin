@@ -35,6 +35,9 @@ func main() {
 		command.KillCommand(factory),
 		command.PortCommand(factory),
 		command.PsCommand(factory),
+		// tuna
+		command.KuberCommand(factory),
+		// end tuna
 	}
 
 	app.Run(os.Args)
