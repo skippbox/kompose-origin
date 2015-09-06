@@ -41,6 +41,7 @@ func main() {
 		command.UnpauseCommand(factory),
 		command.UpCommand(factory),
 		command.VersionCommand(factory),
+		command.KuberCommand(factory),
 	}
 
 	app.Run(os.Args)

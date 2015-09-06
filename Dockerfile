@@ -11,7 +11,13 @@ RUN apt-get update && \
 # Install build dependencies
 RUN go get github.com/aktau/github-release && \
     go get golang.org/x/tools/cmd/cover && \
-    go get github.com/golang/lint/golint
+    go get github.com/golang/lint/golint && \
+    go get github.com/mitchellh/gox && \
+    go get github.com/tools/godep
+
+RUN go get k8s.io/kubernetes/pkg/api && \
+    go get golang.org/x/crypto/ssh
+
 
 # Which docker version to test on and what default one to use
 ENV DOCKER_VERSIONS 1.9.1 1.10.3 1.11.0
