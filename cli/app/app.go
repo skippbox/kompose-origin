@@ -101,6 +101,19 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				},
 			},
 		}
+		sc := &api.Service{
+			TypeMeta: api.TypeMeta{
+				Kind:       "Service",
+				APIVersion: "v1",
+			},
+			ObjectMeta: api.ObjectMeta{
+				Name:   name,
+				Labels: map[string]string{"service": name},
+			},
+			Spec: api.ServiceSpec{
+				Selector: map[string]string{"service": name},				
+			},
+		}
 
 		// Configure the container ports.
 		var ports []api.ContainerPort
@@ -113,6 +126,17 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		}
 
 		rc.Spec.Template.Spec.Containers[0].Ports = ports
+
+		// Configure the service ports.
+		var servicePorts []api.ServicePort
+		for _, port := range service.Ports {
+			portNumber, err := strconv.Atoi(port)
+			if err != nil {
+				log.Fatalf("Invalid container port %s for service %s", port, name)
+			}
+			servicePorts = append(servicePorts, api.ServicePort{Port: portNumber})
+		}
+		sc.Spec.Ports = servicePorts
 
 		// Configure the container restart policy.
 		switch service.Restart {
