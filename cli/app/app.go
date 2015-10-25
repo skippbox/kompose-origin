@@ -19,6 +19,8 @@ import (
 	"github.com/docker/libcompose/project/options"
 
 	"k8s.io/kubernetes/pkg/api"
+	"github.com/kubernetes/pkg/api/latest"
+	"github.com/kubernetes/pkg/client"
 )
 
 // ProjectAction is an adapter to allow the use of ordinary functions as libcompose actions.
@@ -77,6 +79,19 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		log.Fatalf("Failed to create the output directory %s: %v", outputDir, err)
 	}
+
+	//Config client
+	server, err := http.NewRequest("GET", "http://example.com", nil) //TODO: need to add client config to init function
+	if err != nil {
+		fmt.Println("Can't convert to url")
+	}
+
+	version := os.Getenv("KUBE_API_VERSION")
+	if version == "" {
+		version = latest.Version
+	}
+	client := client.NewOrDie(&client.Config{Host: server.URL, Version: version})
+	//End config client
 
 	for name, service := range p.Configs {
 		rc := &api.ReplicationController{
@@ -160,14 +175,26 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 			log.Fatalf("Failed to marshal the replication controller: %v", err)
 		}
 
+		// call create RC api
+		_, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// call create SVC api
+		_, err := client.Services(api.NamespaceDefault).Create(sc)
+		if err != nil {
+			fmt.Println(err)
+		}		
+
 		// Save the replication controller for the Docker compose service to the
 		// configs directory.
-		outputFileName := fmt.Sprintf("%s-rc.yaml", name)
-		outputFilePath := filepath.Join(outputDir, outputFileName)
-		if err := ioutil.WriteFile(outputFilePath, data, 0644); err != nil {
-			log.Fatalf("Failed to write replication controller %s: %v", outputFileName, err)
-		}
-		fmt.Println(outputFilePath)
+		// outputFileName := fmt.Sprintf("%s-rc.yaml", name)
+		// outputFilePath := filepath.Join(outputDir, outputFileName)
+		// if err := ioutil.WriteFile(outputFilePath, data, 0644); err != nil {
+		// 	log.Fatalf("Failed to write replication controller %s: %v", outputFileName, err)
+		// }
+		// fmt.Println(outputFilePath)
 	}
 }
 
