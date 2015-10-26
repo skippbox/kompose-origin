@@ -64,6 +64,17 @@ func ProjectPs(p project.APIProject, c *cli.Context) error {
 	return nil
 }
 
+func ProjectKuberConfig(p *project.Project, c *cli.Context) {
+	url := c.String("host")
+	confDir := "~"
+	outputFileName := fmt.Sprintf(".kuberconfig")
+	outputFilePath := filepath.Join(confDir, outputFileName)
+	if err := ioutil.WriteFile(outputFilePath, url, 0644); err != nil {
+		logrus.Fatalf("Failed to write k8s api server address to %s: %v", outputFilePath, err)
+	}
+	fmt.Println(outputFilePath)
+}
+
 func ProjectKuber(p *project.Project, c *cli.Context) {
 	outputDir := c.String("output")
 	composeFile := c.String("file")
@@ -74,24 +85,27 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	})
 
 	if err := p.Parse(); err != nil {
-		log.Fatalf("Failed to parse the compose project from %s: %v", composeFile, err)
+		logrus.Fatalf("Failed to parse the compose project from %s: %v", composeFile, err)
 	}
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		log.Fatalf("Failed to create the output directory %s: %v", outputDir, err)
+		logrus.Fatalf("Failed to create the output directory %s: %v", outputDir, err)
 	}
 
-	//Config client
-	server, err := http.NewRequest("GET", "http://example.com", nil) //TODO: need to add client config to init function
-	if err != nil {
-		fmt.Println("Can't convert to url")
+	//Get config client
+	outputFilePath := filepath.Join("~", ".kuberconfig")
+	if server, err := ioutil.ReadFile(outputFilePath); err != nil {
+		logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, err)
+	}
+	if server == "" {
+		logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
 	}
 
 	version := os.Getenv("KUBE_API_VERSION")
 	if version == "" {
 		version = latest.Version
 	}
-	client := client.NewOrDie(&client.Config{Host: server.URL, Version: version})
-	//End config client
+	// create new client
+	client := client.NewOrDie(&client.Config{Host: server, Version: version})
 
 	for name, service := range p.Configs {
 		rc := &api.ReplicationController{
@@ -140,7 +154,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		for _, port := range service.Ports {
 			portNumber, err := strconv.Atoi(port)
 			if err != nil {
-				log.Fatalf("Invalid container port %s for service %s", port, name)
+				logrus.Fatalf("Invalid container port %s for service %s", port, name)
 			}
 			ports = append(ports, api.ContainerPort{ContainerPort: portNumber})
 		}
@@ -152,7 +166,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		for _, port := range service.Ports {
 			portNumber, err := strconv.Atoi(port)
 			if err != nil {
-				log.Fatalf("Invalid container port %s for service %s", port, name)
+				logrus.Fatalf("Invalid container port %s for service %s", port, name)
 			}
 			servicePorts = append(servicePorts, api.ServicePort{Port: portNumber})
 		}
@@ -167,12 +181,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		case "on-failure":
 			rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
 		default:
-			log.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
+			logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
 		}
 
 		data, err := json.MarshalIndent(rc, "", "  ")
 		if err != nil {
-			log.Fatalf("Failed to marshal the replication controller: %v", err)
+			logrus.Fatalf("Failed to marshal the replication controller: %v", err)
 		}
 
 		// call create RC api
@@ -185,16 +199,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		_, err := client.Services(api.NamespaceDefault).Create(sc)
 		if err != nil {
 			fmt.Println(err)
-		}		
-
-		// Save the replication controller for the Docker compose service to the
-		// configs directory.
-		// outputFileName := fmt.Sprintf("%s-rc.yaml", name)
-		// outputFilePath := filepath.Join(outputDir, outputFileName)
-		// if err := ioutil.WriteFile(outputFilePath, data, 0644); err != nil {
-		// 	log.Fatalf("Failed to write replication controller %s: %v", outputFileName, err)
-		// }
-		// fmt.Println(outputFilePath)
+		}
 	}
 }
 

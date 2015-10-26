@@ -348,6 +348,20 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
+	return cli.Command{
+		Name:   "kuber config",
+		Usage:  "Config kubernetes api server",
+		Action: app.WithProject(factory, app.ProjectKuberConfig),
+		Flags: []cli.Flag{
+			cli.StringFlag{
+				Name:  "host",
+				Usage: "Specify api server address",
+			},
+		},
+	}
+}
+
 // CommonFlags defines the flags that are in common for all subcommands.
 func CommonFlags() []cli.Flag {
 	return []cli.Flag{

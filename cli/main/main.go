@@ -42,6 +42,7 @@ func main() {
 		command.UpCommand(factory),
 		command.VersionCommand(factory),
 		command.KuberCommand(factory),
+		command.KuberConfigCommand(factory)
 	}
 
 	app.Run(os.Args)
