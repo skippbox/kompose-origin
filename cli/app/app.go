@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"k8s.io/kubernetes/pkg/api"
-	"github.com/kubernetes/pkg/api/latest"
 	"github.com/kubernetes/pkg/client"
 )
 
@@ -95,10 +94,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
 	}
 
-	version := os.Getenv("KUBE_API_VERSION")
-	if version == "" {
-		version = latest.Version
-	}
+	version := "v1"
 	// create new client
 	client := client.NewOrDie(&client.Config{Host: server, Version: version})
 
