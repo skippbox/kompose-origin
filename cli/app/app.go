@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 
 	"k8s.io/kubernetes/pkg/api"
-	"github.com/kubernetes/pkg/client"
+	"k8s.io/kubernetes/pkg/client"
 )
 
 type ProjectAction func(project *project.Project, c *cli.Context)
