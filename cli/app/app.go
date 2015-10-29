@@ -18,8 +18,8 @@ import (
 	"github.com/docker/libcompose/project"
 	"github.com/docker/libcompose/project/options"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client"
+	"github.com/ngtuna/kubernetes-1.0.6/pkg/api"
+	"github.com/ngtuna/kubernetes-1.0.6/pkg/client"
 )
 
 // ProjectAction is an adapter to allow the use of ordinary functions as libcompose actions.
