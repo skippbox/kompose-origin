@@ -11,10 +11,12 @@ RUN go get github.com/mitchellh/gox
 RUN go get github.com/aktau/github-release
 RUN go get github.com/tools/godep
 RUN go get golang.org/x/tools/cmd/cover
-#tuna
-RUN go get k8s.io/kubernetes/pkg/api
+#########################################
+# Can not use unstable version of k8s.io/kubernetes/pkg/api. Replacing with released version 1.0.6
+# RUN go get k8s.io/kubernetes/pkg/api
+#########################################
+RUN go get github.com/ngtuna/kubernetes-1.0.6/pkg/api
 RUN go get golang.org/x/crypto/ssh
-#end tuna
 
 # Which docker version to test on
 ENV DOCKER_VERSION 1.7.1
