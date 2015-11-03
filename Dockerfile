@@ -9,6 +9,7 @@ RUN apt-get update && \
     easy_install pip && pip install virtualenv
 
 # Install build dependencies
+<<<<<<< 15449ebf3cd3ceeec3fda10670454782ef6e7742
 RUN go get github.com/aktau/github-release && \
     go get golang.org/x/tools/cmd/cover && \
     go get github.com/golang/lint/golint && \
@@ -22,6 +23,21 @@ RUN go get k8s.io/kubernetes/pkg/api && \
 # Which docker version to test on and what default one to use
 ENV DOCKER_VERSIONS 1.9.1 1.10.3 1.11.0
 ENV DEFAULT_DOCKER_VERSION 1.10.3
+=======
+RUN go get github.com/mitchellh/gox
+RUN go get github.com/aktau/github-release
+RUN go get github.com/tools/godep
+RUN go get golang.org/x/tools/cmd/cover
+#############################################################
+# Can not go get from Dockerfile due to unstable source code. 
+# Need to get manually, check README for more detail
+# RUN go get k8s.io/kubernetes/pkg/api
+#############################################################
+RUN go get golang.org/x/crypto/ssh
+
+# Which docker version to test on
+ENV DOCKER_VERSION 1.7.1
+>>>>>>> work around solution with getting manually k8s api: k8s issue #16361
 
 # Download docker
 RUN set -e; \
