@@ -11,11 +11,11 @@ RUN go get github.com/mitchellh/gox
 RUN go get github.com/aktau/github-release
 RUN go get github.com/tools/godep
 RUN go get golang.org/x/tools/cmd/cover
-#########################################
-# Can not use unstable version of k8s.io/kubernetes/pkg/api. Replacing with released version 1.0.6
+#############################################################
+# Can not go get from Dockerfile due to unstable source code. 
+# Need to get manually, check README for more detail
 # RUN go get k8s.io/kubernetes/pkg/api
-#########################################
-RUN go get github.com/ngtuna/kubernetes-1.0.6/pkg/api
+#############################################################
 RUN go get golang.org/x/crypto/ssh
 
 # Which docker version to test on

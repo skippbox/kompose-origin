@@ -182,10 +182,6 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 		Usage:  "Convert docker-compose.yml to Kubernetes object",
 		Action: app.WithProject(factory, app.ProjectKuber),
 		Flags: []cli.Flag{
-			// cli.StringFlag{
-			// 	Name:  "output",
-			// 	Usage: "Kubernetes configs output directory",
-			// },
 			cli.StringFlag{
 				Name:  "file",
 				Usage: "Specify an alternate compose file (default: docker-compose.yml)",
@@ -196,7 +192,7 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 
 func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
-		Name:   "kuber config",
+		Name:   "kuberconfig",
 		Usage:  "Config kubernetes api server",
 		Action: app.WithProject(factory, app.ProjectKuberConfig),
 		Flags: []cli.Flag{

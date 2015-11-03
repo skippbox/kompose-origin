@@ -34,9 +34,9 @@ func main() {
 		command.PullCommand(factory),
 		command.KillCommand(factory),
 		command.PortCommand(factory),
-		command.PsCommand(factory),
 		command.KuberCommand(factory),
-		command.KuberConfigCommand(factory)
+		command.PsCommand(factory),
+		command.KuberConfigCommand(factory),
 	}
 
 	app.Run(os.Args)
