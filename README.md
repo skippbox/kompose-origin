@@ -99,6 +99,15 @@ Test success
 
 The project is still being kickstarted... But it does a lot.  Please try it out and help us find bugs.
 
+## Note for Kubernetes API package
+
+In order to getting k8s api, executing below commands:
+
+```bash
+$ export GOPATH=/path/to/kcompose/Godeps/_workspace
+$ go get k8s.io/kubernetes/pkg/api
+```
+
 ## Contributing
 
 Want to hack on libcompose? [Docker's contributions guidelines](https://github.com/docker/docker/blob/master/CONTRIBUTING.md) apply.
