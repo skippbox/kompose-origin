@@ -121,13 +121,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	outputFileName := fmt.Sprintf(".kuberconfig")
 	outputFilePath := filepath.Join(confDir, outputFileName)
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
-	if readErr != nil {
-		logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
+	var server string = "127.0.0.1"
+	if readErr == nil {
+		// logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
+		server = string(readServer)
 	}
-	server := string(readServer)
-	if server == "" {
-		logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
-	}
+	// if server == "" {
+	// 	logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
+	// }
 
 	version := "v1"
 	// create new client
