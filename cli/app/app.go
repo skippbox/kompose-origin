@@ -122,13 +122,16 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	outputFileName := fmt.Sprintf(".kuberconfig")
 	outputFilePath := filepath.Join(confDir, outputFileName)
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
-	if readErr != nil {
-		logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
+	var server string = "127.0.0.1"
+
+	if readErr == nil {
+		// logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
+		server = string(readServer)
 	}
-	server := string(readServer)
-	if server == "" {
-		logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
-	}
+	// server := string(readServer)
+	// if server == "" {
+	// 	logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
+	// }
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
 	var serviceLinks []string
@@ -177,15 +180,26 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				Selector: map[string]string{"service": name},
 			},
 		}
-
+		
 		// Configure the container ports.
 		var ports []api.ContainerPort
 		for _, port := range service.Ports {
-			portNumber, err := strconv.Atoi(port)
-			if err != nil {
-				logrus.Fatalf("Invalid container port %s for service %s", port, name)
-			}
-			ports = append(ports, api.ContainerPort{ContainerPort: portNumber})
+			var character string = ":"
+			if strings.Contains(port, character) {
+				//portNumber := port[0:strings.Index(port, character)]
+				targetPortNumber := port[strings.Index(port, character) + 1: len(port)]
+				targetPortNumberInt, err := strconv.Atoi(targetPortNumber)
+				if err != nil {
+					logrus.Fatalf("Invalid container port %s for service %s", port, name)
+				}
+				ports = append(ports, api.ContainerPort{ContainerPort: targetPortNumberInt})
+			} else {
+				portNumber, err := strconv.Atoi(port)
+				if err != nil {
+					logrus.Fatalf("Invalid container port %s for service %s", port, name)
+				}
+				ports = append(ports, api.ContainerPort{ContainerPort: portNumber})
+			}			
 		}
 
 		rc.Spec.Template.Spec.Containers[0].Ports = ports
@@ -193,14 +207,32 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		// Configure the service ports.
 		var servicePorts []api.ServicePort
 		for _, port := range service.Ports {
-			portNumber, err := strconv.Atoi(port)
-			if err != nil {
-				logrus.Fatalf("Invalid container port %s for service %s", port, name)
-			}
-			var targetPort util.IntOrString
-			targetPort.StrVal = strconv.Itoa(portNumber)
-			targetPort.IntVal = portNumber
-			servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
+			var character string = ":"
+			if strings.Contains(port, character) {
+				portNumber := port[0:strings.Index(port, character)]
+				targetPortNumber := port[strings.Index(port, character) + 1: len(port)]
+				portNumberInt, err := strconv.Atoi(portNumber)				
+				if err != nil {
+					logrus.Fatalf("Invalid container port %s for service %s", port, name)
+				}
+				targetPortNumberInt, err1 := strconv.Atoi(targetPortNumber)
+				if err1 != nil {
+					logrus.Fatalf("Invalid container port %s for service %s", port, name)
+				}
+				var targetPort util.IntOrString
+				targetPort.StrVal = targetPortNumber
+				targetPort.IntVal = targetPortNumberInt
+				servicePorts = append(servicePorts, api.ServicePort{Port: portNumberInt, Name: portNumber, Protocol: "TCP", TargetPort: targetPort})	
+			} else {
+				portNumber, err := strconv.Atoi(port)
+				if err != nil {
+					logrus.Fatalf("Invalid container port %s for service %s", port, name)
+				}
+				var targetPort util.IntOrString
+				targetPort.StrVal = strconv.Itoa(portNumber)
+				targetPort.IntVal = portNumber
+				servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
+			}			
 		}
 		sc.Spec.Ports = servicePorts
 
@@ -254,18 +286,22 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		fmt.Println(rcCreated)
 
 		for k, v := range mServices {
-        	fmt.Println(k)
-        	for i :=0; i < len(serviceLinks); i++ {
-        		if serviceLinks[i] == k {
-        			// call create SVC api
+			fmt.Println(k)
+			for i :=0; i < len(serviceLinks); i++ {
+				if serviceLinks[i] == k {
+					// call create SVC api
 					scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
 					if err != nil {
 						fmt.Println(err)
 					}
 					fmt.Println(scCreated)
-        		}
-        	}
-    	}
+				}
+			}
+		}
+
+		//Test
+
+
 	}
 }
 
