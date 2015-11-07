@@ -20,6 +20,7 @@ import (
 	"github.com/docker/libcompose/project/options"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 )
@@ -121,14 +122,16 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	outputFileName := fmt.Sprintf(".kuberconfig")
 	outputFilePath := filepath.Join(confDir, outputFileName)
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
-	var server string = "127.0.0.1"
-	if readErr == nil {
-		// logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
-		server = string(readServer)
+	if readErr != nil {
+		logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
 	}
-	// if server == "" {
-	// 	logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
-	// }
+	server := string(readServer)
+	if server == "" {
+		logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
+	}
+
+	var mServices map[string]api.Service = make(map[string]api.Service)
+	var serviceLinks []string
 
 	version := "v1"
 	// create new client
@@ -194,7 +197,10 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 			if err != nil {
 				logrus.Fatalf("Invalid container port %s for service %s", port, name)
 			}
-			servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber)})
+			var targetPort util.IntOrString
+			targetPort.StrVal = strconv.Itoa(portNumber)
+			targetPort.IntVal = portNumber
+			servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
 		}
 		sc.Spec.Ports = servicePorts
 
@@ -210,23 +216,56 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 			logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
 		}
 
-		data, err := json.MarshalIndent(rc, "", "  ")
+		datarc, err := json.MarshalIndent(rc, "", "  ")
 		if err != nil {
 			logrus.Fatalf("Failed to marshal the replication controller: %v", err)
 		}
-		fmt.Println(string(data))
+		fmt.Println(string(datarc))
+
+		datasc, er := json.MarshalIndent(sc, "", "	")
+		if er != nil {
+			logrus.Fatalf("Failed to marshal the service controller: %v", er)
+		}
+		fmt.Println(string(datasc))
+
+		mServices[name] = *sc			
+
+		if len(service.Links.Slice()) > 0 {
+			for i := 0; i < len(service.Links.Slice()); i++ {
+				var data string = service.Links.Slice()[i]
+				if len(serviceLinks) == 0 {
+					serviceLinks = append(serviceLinks, data)
+				} else {
+					for _, v := range serviceLinks {
+						if v != data {
+							serviceLinks = append(serviceLinks, data)
+						}						
+					}
+				}
+			}			
+			
+		}
+				
 		// call create RC api
 		rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Println(rcCreated)
 
-		// call create SVC api
-		scCreated, err := client.Services(api.NamespaceDefault).Create(sc)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(rcCreated, scCreated)
+		for k, v := range mServices {
+        	fmt.Println(k)
+        	for i :=0; i < len(serviceLinks); i++ {
+        		if serviceLinks[i] == k {
+        			// call create SVC api
+					scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
+					if err != nil {
+						fmt.Println(err)
+					}
+					fmt.Println(scCreated)
+        		}
+        	}
+    	}
 	}
 }
 
