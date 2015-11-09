@@ -69,24 +69,7 @@ func ProjectPs(p project.APIProject, c *cli.Context) error {
 func ProjectKuberConfig(p *project.Project, c *cli.Context) {
 	url := c.String("host")
 
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	confDir := usr.HomeDir
-    if err != nil {
-            log.Fatal(err)
-    }
-	outputFileName := fmt.Sprintf(".kuberconfig")
-	outputFilePath := filepath.Join(confDir, outputFileName)
-	if _, err :=  os.Stat(outputFilePath); os.IsNotExist(err) {
-		f, err := os.Create(outputFilePath)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-	}
+	outputFilePath := ".kuberconfig"
 	wurl := []byte(url)
 	if err := ioutil.WriteFile(outputFilePath, wurl, 0644); err != nil {
 		logrus.Fatalf("Failed to write k8s api server address to %s: %v", outputFilePath, err)
@@ -94,7 +77,6 @@ func ProjectKuberConfig(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuber(p *project.Project, c *cli.Context) {
-	//outputDir := c.String("output")
 	composeFile := c.String("file")
 
 	p = project.NewProject(&project.Context{
@@ -105,33 +87,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	if err := p.Parse(); err != nil {
 		logrus.Fatalf("Failed to parse the compose project from %s: %v", composeFile, err)
 	}
-	//if err := os.MkdirAll(outputDir, 0755); err != nil {
-	//	logrus.Fatalf("Failed to create the output directory %s: %v", outputDir, err)
-	//}
 
-	//Get config client
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	confDir := usr.HomeDir
-    if err != nil {
-            log.Fatal(err)
-    }
-	outputFileName := fmt.Sprintf(".kuberconfig")
-	outputFilePath := filepath.Join(confDir, outputFileName)
+	outputFilePath := ".kuberconfig"
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
 	var server string = "127.0.0.1"
 
 	if readErr == nil {
-		// logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
 		server = string(readServer)
 	}
-	// server := string(readServer)
-	// if server == "" {
-	// 	logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
-	// }
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
 	var serviceLinks []string
@@ -180,7 +143,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				Selector: map[string]string{"service": name},
 			},
 		}
-		
+
 		// Configure the container ports.
 		var ports []api.ContainerPort
 		for _, port := range service.Ports {
@@ -199,7 +162,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 					logrus.Fatalf("Invalid container port %s for service %s", port, name)
 				}
 				ports = append(ports, api.ContainerPort{ContainerPort: portNumber})
-			}			
+			}
 		}
 
 		rc.Spec.Template.Spec.Containers[0].Ports = ports
@@ -211,7 +174,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 			if strings.Contains(port, character) {
 				portNumber := port[0:strings.Index(port, character)]
 				targetPortNumber := port[strings.Index(port, character) + 1: len(port)]
-				portNumberInt, err := strconv.Atoi(portNumber)				
+				portNumberInt, err := strconv.Atoi(portNumber)
 				if err != nil {
 					logrus.Fatalf("Invalid container port %s for service %s", port, name)
 				}
@@ -222,7 +185,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				var targetPort util.IntOrString
 				targetPort.StrVal = targetPortNumber
 				targetPort.IntVal = targetPortNumberInt
-				servicePorts = append(servicePorts, api.ServicePort{Port: portNumberInt, Name: portNumber, Protocol: "TCP", TargetPort: targetPort})	
+				servicePorts = append(servicePorts, api.ServicePort{Port: portNumberInt, Name: portNumber, Protocol: "TCP", TargetPort: targetPort})
 			} else {
 				portNumber, err := strconv.Atoi(port)
 				if err != nil {
@@ -232,7 +195,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				targetPort.StrVal = strconv.Itoa(portNumber)
 				targetPort.IntVal = portNumber
 				servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
-			}			
+			}
 		}
 		sc.Spec.Ports = servicePorts
 
@@ -260,7 +223,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		}
 		fmt.Println(string(datasc))
 
-		mServices[name] = *sc			
+		mServices[name] = *sc
 
 		if len(service.Links.Slice()) > 0 {
 			for i := 0; i < len(service.Links.Slice()); i++ {
@@ -271,13 +234,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 					for _, v := range serviceLinks {
 						if v != data {
 							serviceLinks = append(serviceLinks, data)
-						}						
+						}
 					}
 				}
-			}			
-			
+			}
+
 		}
-				
+
 		// call create RC api
 		rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
 		if err != nil {
