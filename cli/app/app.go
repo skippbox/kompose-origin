@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
 	"strconv"
 	"strings"
 
@@ -14,7 +13,6 @@ import (
 
 	"encoding/json"
 	"io/ioutil"
-	"path/filepath"
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/util"
@@ -64,24 +62,7 @@ func ProjectPs(p *project.Project, c *cli.Context) {
 func ProjectKuberConfig(p *project.Project, c *cli.Context) {	
 	url := c.String("host")
 
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	confDir := usr.HomeDir
-    if err != nil {
-            log.Fatal(err)
-    }
-	outputFileName := fmt.Sprintf(".kuberconfig")	
-	outputFilePath := filepath.Join(confDir, outputFileName)
-	if _, err :=  os.Stat(outputFilePath); os.IsNotExist(err) {
-		f, err := os.Create(outputFilePath)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-	}
+	outputFilePath := ".kuberconfig"
 	wurl := []byte(url)
 	if err := ioutil.WriteFile(outputFilePath, wurl, 0644); err != nil {
 		logrus.Fatalf("Failed to write k8s api server address to %s: %v", outputFilePath, err)
@@ -89,7 +70,6 @@ func ProjectKuberConfig(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuber(p *project.Project, c *cli.Context) {
-	//outputDir := c.String("output")
 	composeFile := c.String("file")
 
 	p = project.NewProject(&project.Context{
@@ -100,33 +80,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	if err := p.Parse(); err != nil {
 		logrus.Fatalf("Failed to parse the compose project from %s: %v", composeFile, err)
 	}
-	//if err := os.MkdirAll(outputDir, 0755); err != nil {
-	//	logrus.Fatalf("Failed to create the output directory %s: %v", outputDir, err)
-	//}
 
-	//Get config client
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	confDir := usr.HomeDir
-    if err != nil {
-            log.Fatal(err)
-    }
-	outputFileName := fmt.Sprintf(".kuberconfig")	
-	outputFilePath := filepath.Join(confDir, outputFileName)
+	outputFilePath := ".kuberconfig"
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
 	var server string = "127.0.0.1"
 
 	if readErr == nil {
-		// logrus.Fatalf("Failed to read k8s api server address from %s: %v", outputFilePath, readErr)
 		server = string(readServer)
 	}
-	// server := string(readServer)
-	// if server == "" {
-	// 	logrus.Fatalf("K8s api server address isn't defined in %s", outputFilePath)
-	// }
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
 	var serviceLinks []string
