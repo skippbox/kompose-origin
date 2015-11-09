@@ -90,10 +90,10 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
 	outputFilePath := ".kuberconfig"
 	readServer, readErr := ioutil.ReadFile(outputFilePath)
-	var server string = "127.0.0.1"
+	var server string = "127.0.0.1:8080"
 
 	if readErr == nil {
-		server = string(readServer)
+		server = string(readServer) + ":8080"
 	}
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
