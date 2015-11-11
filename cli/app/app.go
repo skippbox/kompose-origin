@@ -241,6 +241,11 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 		}
 		fmt.Println(rcCreated)
 
+		fileRC := fmt.Sprintf("%s-rc.yaml", name)
+		if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
+			log.Fatalf("Failed to write replication controller %s: %v", outputFileRC, err)
+		}
+
 		for k, v := range mServices {
 			fmt.Println(k)
 			for i :=0; i < len(serviceLinks); i++ {
@@ -251,6 +256,18 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 						fmt.Println(err)
 					}
 					fmt.Println(scCreated)
+					
+					datasvc, er := json.MarshalIndent(v, "", "	")
+					if er != nil {
+						logrus.Fatalf("Failed to marshal the service controller: %v", er)
+					}
+
+					fileSVC := fmt.Sprintf("%s-svc.yaml", k)
+					//outputFileSVC := filepath.Join(path, fileSVC)
+
+					if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
+						log.Fatalf("Failed to write service controller %s: %v", outputFileSVC, err)
+					}
 				}
 			}
 		}
