@@ -243,7 +243,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
 		fileRC := fmt.Sprintf("%s-rc.yaml", name)
 		if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
-			log.Fatalf("Failed to write replication controller %s: %v", outputFileRC, err)
+			log.Fatalf("Failed to write replication controller: %v", err)
 		}
 
 		for k, v := range mServices {
@@ -263,10 +263,9 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 					}
 
 					fileSVC := fmt.Sprintf("%s-svc.yaml", k)
-					//outputFileSVC := filepath.Join(path, fileSVC)
 
 					if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
-						log.Fatalf("Failed to write service controller %s: %v", outputFileSVC, err)
+						log.Fatalf("Failed to write service controller: %v", err)
 					}
 				}
 			}
@@ -431,3 +430,4 @@ func ProjectScale(p *project.Project, c *cli.Context) {
 func wait() {
 	<-make(chan interface{})
 }
+
