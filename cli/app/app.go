@@ -20,7 +20,7 @@ import (
 	"github.com/docker/libcompose/project/options"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/util"
+        "k8s.io/kubernetes/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 )
@@ -182,7 +182,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				if err1 != nil {
 					logrus.Fatalf("Invalid container port %s for service %s", port, name)
 				}
-				var targetPort util.IntOrString
+				var targetPort intstr.IntOrString
 				targetPort.StrVal = targetPortNumber
 				targetPort.IntVal = targetPortNumberInt
 				servicePorts = append(servicePorts, api.ServicePort{Port: portNumberInt, Name: portNumber, Protocol: "TCP", TargetPort: targetPort})
@@ -191,7 +191,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 				if err != nil {
 					logrus.Fatalf("Invalid container port %s for service %s", port, name)
 				}
-				var targetPort util.IntOrString
+				var targetPort intstr.IntOrString
 				targetPort.StrVal = strconv.Itoa(portNumber)
 				targetPort.IntVal = portNumber
 				servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
