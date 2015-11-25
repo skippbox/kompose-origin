@@ -332,7 +332,7 @@ func VersionCommand(factory app.ProjectFactory) cli.Command {
 
 func KuberCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
-		Name:   "kuber",
+		Name:   "k8s",
 		Usage:  "Convert docker-compose.yml to Kubernetes object",
 		Action: app.WithProject(factory, app.ProjectKuber),
 		Flags: []cli.Flag{
@@ -346,7 +346,7 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 
 func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
-		Name:   "kuberconfig",
+		Name:   "kubeconfig",
 		Usage:  "Config kubernetes api server",
 		Action: app.WithProject(factory, app.ProjectKuberConfig),
 		Flags: []cli.Flag{
