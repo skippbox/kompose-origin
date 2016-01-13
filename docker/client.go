@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"crypto/tls"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,10 +10,12 @@ import (
 	"github.com/docker/docker/opts"
 	"github.com/docker/docker/pkg/homedir"
 	"github.com/docker/docker/pkg/tlsconfig"
-	"github.com/samalba/dockerclient"
+	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 const (
+	// DefaultAPIVersion is the default docker API version set by libcompose
+	DefaultAPIVersion   = "1.20"
 	defaultTrustKeyFile = "key.json"
 	defaultCaFile       = "ca.pem"
 	defaultKeyFile      = "key.pem"
@@ -31,15 +32,18 @@ func init() {
 	}
 }
 
+// ClientOpts holds docker client options (host, tls, ..)
 type ClientOpts struct {
 	TLS        bool
 	TLSVerify  bool
 	TLSOptions tlsconfig.Options
 	TrustKey   string
 	Host       string
+	APIVersion string
 }
 
-func CreateClient(c ClientOpts) (dockerclient.Client, error) {
+// CreateClient creates a docker client based on the specified options.
+func CreateClient(c ClientOpts) (*dockerclient.Client, error) {
 	if c.TLSOptions.CAFile == "" {
 		c.TLSOptions.CAFile = filepath.Join(dockerCertPath, defaultCaFile)
 	}
@@ -80,15 +84,19 @@ func CreateClient(c ClientOpts) (dockerclient.Client, error) {
 		c.TLSOptions.InsecureSkipVerify = !c.TLSVerify
 	}
 
-	var tlsConfig *tls.Config
-
+	apiVersion := c.APIVersion
+	if apiVersion == "" {
+		apiVersion = DefaultAPIVersion
+	}
 	if c.TLS {
-		var err error
-		tlsConfig, err = tlsconfig.Client(c.TLSOptions)
+		client, err := dockerclient.NewVersionedTLSClient(c.Host, c.TLSOptions.CertFile, c.TLSOptions.KeyFile, c.TLSOptions.CAFile, apiVersion)
 		if err != nil {
 			return nil, err
 		}
+		if c.TLSOptions.InsecureSkipVerify {
+			client.TLSConfig.InsecureSkipVerify = true
+		}
+		return client, nil
 	}
-
-	return dockerclient.NewDockerClient(c.Host, tlsConfig)
+	return dockerclient.NewVersionedClient(c.Host, apiVersion)
 }

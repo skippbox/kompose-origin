@@ -37,6 +37,8 @@ func main() {
 		command.KuberCommand(factory),
 		command.PsCommand(factory),
 		command.KuberConfigCommand(factory),
+		command.PauseCommand(factory),
+		command.UnpauseCommand(factory),
 	}
 
 	app.Run(os.Args)

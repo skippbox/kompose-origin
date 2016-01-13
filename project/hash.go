@@ -9,12 +9,13 @@ import (
 	"sort"
 )
 
-func GetServiceHash(service Service) string {
+// GetServiceHash computes and returns a hash that will identify a service.
+// This hash will be then used to detect if the service definition/configuration
+// have changed and needs to be recreated.
+func GetServiceHash(name string, config *ServiceConfig) string {
 	hash := sha1.New()
 
-	io.WriteString(hash, fmt.Sprintln(service.Name()))
-
-	config := service.Config()
+	io.WriteString(hash, name)
 
 	//Get values of Service through reflection
 	val := reflect.ValueOf(config).Elem()
@@ -47,9 +48,7 @@ func GetServiceHash(service Service) string {
 		case SliceorMap:
 			sliceKeys := []string{}
 			for lkey := range s.MapParts() {
-				if lkey != "io.rancher.os.hash" {
-					sliceKeys = append(sliceKeys, lkey)
-				}
+				sliceKeys = append(sliceKeys, lkey)
 			}
 			sort.Strings(sliceKeys)
 

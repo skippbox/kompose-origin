@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 set -e
 
+export LIBCOMPOSE_PKG='github.com/docker/libcompose'
+
 # List of bundles to create when no argument is passed
 DEFAULT_BUNDLES=(
 	validate-gofmt
 	#validate-git-marks
-        validate-dco
-        
+	validate-dco
+	validate-git-marks
+	validate-lint
+	validate-vet
 	binary
 
 	test-unit
 	test-integration
+	test-acceptance
 )
-
 bundle() {
     local bundle="$1"; shift
     echo "---> Making bundle: $(basename "$bundle") (in $DEST)"
