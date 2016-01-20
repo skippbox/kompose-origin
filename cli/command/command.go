@@ -337,8 +337,10 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 		Action: app.WithProject(factory, app.ProjectKuber),
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "file",
+				Name:  "file,f",
 				Usage: "Specify an alternate compose file (default: docker-compose.yml)",
+				Value:	"docker-compose.yml",
+				EnvVar: "COMPOSE_FILE",
 			},
 		},
 	}

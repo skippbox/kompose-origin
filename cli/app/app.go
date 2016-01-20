@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -93,7 +94,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	var server string = "127.0.0.1:8080"
 
 	if readErr == nil {
-		server = string(readServer) + ":8080"
+		server = strings.TrimSpace(string(readServer))
+
+		found, err := regexp.MatchString(".+:[\\d]+", server)
+		if !found || err != nil {
+			server += ":8080"
+		}
 	}
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
@@ -263,7 +269,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 						fmt.Println(err)
 					}
 					fmt.Println(scCreated)
-					
+
 					datasvc, er := json.MarshalIndent(v, "", "	")
 					if er != nil {
 						logrus.Fatalf("Failed to marshal the service controller: %v", er)
@@ -526,4 +532,3 @@ func ProjectScale(p project.APIProject, c *cli.Context) error {
 	}
 	return nil
 }
-
