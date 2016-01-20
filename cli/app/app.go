@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -97,7 +98,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	var server string = "127.0.0.1:8080"
 
 	if readErr == nil {
-		server = string(readServer) + ":8080"
+		server = strings.TrimSpace(string(readServer))
+
+		found, err := regexp.MatchString(".+:[\\d]+", server)
+		if !found || err != nil {
+			server += ":8080"
+		}
 	}
 
 	var mServices map[string]api.Service = make(map[string]api.Service)
