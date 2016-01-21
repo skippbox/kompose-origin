@@ -6,6 +6,7 @@ import (
 	"github.com/docker/libcompose/project"
 )
 
+// CreateCommand defines the libcompose create subcommand.
 func CreateCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "create",
@@ -14,22 +15,37 @@ func CreateCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// BuildCommand defines the libcompose build subcommand.
 func BuildCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "build",
 		Usage:  "Build or rebuild services.",
 		Action: app.WithProject(factory, app.ProjectBuild),
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "no-cache",
+				Usage: "Do not use cache when building the image",
+			},
+		},
 	}
 }
 
+// PsCommand defines the libcompose ps subcommand.
 func PsCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "ps",
 		Usage:  "List containers",
 		Action: app.WithProject(factory, app.ProjectPs),
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "q",
+				Usage: "Only display IDs",
+			},
+		},
 	}
 }
 
+// PortCommand defines the libcompose port subcommand.
 func PortCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "port",
@@ -50,6 +66,7 @@ func PortCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// UpCommand defines the libcompose up subcommand.
 func UpCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "up",
@@ -60,10 +77,19 @@ func UpCommand(factory app.ProjectFactory) cli.Command {
 				Name:  "d",
 				Usage: "Do not block and log",
 			},
+			cli.BoolFlag{
+				Name:  "no-recreate",
+				Usage: "If containers already exist, don't recreate them. Incompatible with --force-recreate.",
+			},
+			cli.BoolFlag{
+				Name:  "force-recreate",
+				Usage: "Recreate containers even if their configuration and image haven't changed. Incompatible with --no-recreate.",
+			},
 		},
 	}
 }
 
+// StartCommand defines the libcompose start subcommand.
 func StartCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "start",
@@ -78,6 +104,7 @@ func StartCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// PullCommand defines the libcompose pull subcommand.
 func PullCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "pull",
@@ -86,6 +113,7 @@ func PullCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// LogsCommand defines the libcompose logs subcommand.
 func LogsCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "logs",
@@ -101,6 +129,7 @@ func LogsCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// RestartCommand defines the libcompose restart subcommand.
 func RestartCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "restart",
@@ -116,6 +145,7 @@ func RestartCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// StopCommand defines the libcompose stop subcommand.
 func StopCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:      "stop",
@@ -132,6 +162,7 @@ func StopCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// ScaleCommand defines the libcompose scale subcommand.
 func ScaleCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "scale",
@@ -147,6 +178,7 @@ func ScaleCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// RmCommand defines the libcompose rm subcommand.
 func RmCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "rm",
@@ -157,10 +189,15 @@ func RmCommand(factory app.ProjectFactory) cli.Command {
 				Name:  "force,f",
 				Usage: "Allow deletion of all services",
 			},
+			cli.BoolFlag{
+				Name:  "v",
+				Usage: "Remove volumes associated with containers",
+			},
 		},
 	}
 }
 
+// KillCommand defines the libcompose kill subcommand.
 func KillCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "kill",
@@ -183,8 +220,10 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 		Action: app.WithProject(factory, app.ProjectKuber),
 		Flags: []cli.Flag{
 			cli.StringFlag{
-				Name:  "file",
+				Name:  "file,f",
 				Usage: "Specify an alternate compose file (default: docker-compose.yml)",
+				Value:	"docker-compose.yml",
+				EnvVar: "COMPOSE_FILE",
 			},
 		},
 	}
@@ -204,6 +243,27 @@ func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
+// PauseCommand defines the libcompose pause subcommand.
+func PauseCommand(factory app.ProjectFactory) cli.Command {
+	return cli.Command{
+		Name:  "pause",
+		Usage: "Pause services.",
+		// ArgsUsage: "[SERVICE...]",
+		Action: app.WithProject(factory, app.ProjectPause),
+	}
+}
+
+// UnpauseCommand defines the libcompose unpause subcommand.
+func UnpauseCommand(factory app.ProjectFactory) cli.Command {
+	return cli.Command{
+		Name:  "unpause",
+		Usage: "Unpause services.",
+		// ArgsUsage: "[SERVICE...]",
+		Action: app.WithProject(factory, app.ProjectUnpause),
+	}
+}
+
+// CommonFlags defines the flags that are in common for all subcommands.
 func CommonFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.BoolFlag{
@@ -222,6 +282,7 @@ func CommonFlags() []cli.Flag {
 	}
 }
 
+// Populate updates the specified project context based on command line arguments and subcommands.
 func Populate(context *project.Context, c *cli.Context) {
 	context.ComposeFile = c.GlobalString("file")
 	context.ProjectName = c.GlobalString("project-name")
@@ -230,9 +291,15 @@ func Populate(context *project.Context, c *cli.Context) {
 		context.Log = true
 	} else if c.Command.Name == "up" {
 		context.Log = !c.Bool("d")
+		context.NoRecreate = c.Bool("no-recreate")
+		context.ForceRecreate = c.Bool("force-recreate")
 	} else if c.Command.Name == "stop" || c.Command.Name == "restart" || c.Command.Name == "scale" {
-		context.Timeout = c.Int("timeout")
+		context.Timeout = uint(c.Int("timeout"))
 	} else if c.Command.Name == "kill" {
-		context.Signal = c.String("signal")
+		context.Signal = c.Int("signal")
+	} else if c.Command.Name == "rm" {
+		context.Volume = c.Bool("v")
+	} else if c.Command.Name == "build" {
+		context.NoCache = c.Bool("no-cache")
 	}
 }

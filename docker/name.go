@@ -5,11 +5,12 @@ import (
 	"io"
 	"time"
 
-	"github.com/samalba/dockerclient"
+	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
 const format = "%s_%s_%d"
 
+// Namer defines method to provide container name.
 type Namer interface {
 	io.Closer
 	Next() string
@@ -20,14 +21,18 @@ type inOrderNamer struct {
 	done  chan bool
 }
 
-func OneName(client dockerclient.Client, project, service string) (string, error) {
-	namer := NewNamer(client, project, service)
-	defer namer.Close()
-
-	return namer.Next(), nil
+type singleNamer struct {
+	name string
 }
 
-func NewNamer(client dockerclient.Client, project, service string) Namer {
+// NewSingleNamer returns a namer that only allows a single name.
+func NewSingleNamer(name string) Namer {
+	return &singleNamer{name}
+}
+
+// NewNamer returns a namer that returns names based on the specified project and
+// service name and an inner counter, e.g. project_service_1, project_service_2…
+func NewNamer(client *dockerclient.Client, project, service string) Namer {
 	namer := &inOrderNamer{
 		names: make(chan string),
 		done:  make(chan bool),
@@ -63,11 +68,14 @@ func (i *inOrderNamer) Next() string {
 }
 
 func (i *inOrderNamer) Close() error {
-	select {
-	case i.done <- true:
-		close(i.done)
-	default:
-	}
+	close(i.done)
+	return nil
+}
 
+func (s *singleNamer) Next() string {
+	return s.name
+}
+
+func (s *singleNamer) Close() error {
 	return nil
 }

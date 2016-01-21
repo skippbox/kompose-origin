@@ -15,10 +15,16 @@ import (
 
 var projectRegexp = regexp.MustCompile("[^a-zA-Z0-9_.-]")
 
+// Context holds context meta information about a libcompose project, like
+// the project name, the compose file, etc.
 type Context struct {
-	Timeout             int
+	Timeout             uint
 	Log                 bool
-	Signal              string
+	Volume              bool
+	ForceRecreate       bool
+	NoRecreate          bool
+	NoCache             bool
+	Signal              int
 	ComposeFile         string
 	ComposeBytes        []byte
 	ProjectName         string
@@ -39,12 +45,12 @@ func (c *Context) readComposeFile() error {
 	logrus.Debugf("Opening compose file: %s", c.ComposeFile)
 
 	if c.ComposeFile == "-" {
-		if composeBytes, err := ioutil.ReadAll(os.Stdin); err != nil {
+		composeBytes, err := ioutil.ReadAll(os.Stdin)
+		if err != nil {
 			logrus.Errorf("Failed to read compose file from stdin: %v", err)
 			return err
-		} else {
-			c.ComposeBytes = composeBytes
 		}
+		c.ComposeBytes = composeBytes
 	} else if c.ComposeFile != "" {
 		if composeBytes, err := ioutil.ReadFile(c.ComposeFile); os.IsNotExist(err) {
 			if c.IgnoreMissingConfig {

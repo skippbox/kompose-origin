@@ -1,5 +1,8 @@
 # libcompose
 
+[![GoDoc](https://godoc.org/github.com/docker/libcompose?status.png)](https://godoc.org/github.com/docker/libcompose)
+[![Jenkins Build Status](https://jenkins.dockerproject.org/view/Libcompose/job/Libcompose%20Master/badge/icon)](https://jenkins.dockerproject.org/view/Libcompose/job/Libcompose%20Master/)
+
 A Go library for Docker Compose. It does everything the command-line tool does, but from within Go -- read Compose files, start them, scale them, etc.
 
 **Note: This is experimental and not intended to replace the [Docker Compose](https://github.com/docker/compose) command-line tool. If you're looking to use Compose, head over to the [Compose installation instructions](http://docs.docker.com/compose/install/) to get started with it.**
@@ -32,6 +35,11 @@ func main() {
 
 ## Building
 
+You need either [Docker](http://github.com/docker/docker) and `make`,
+or `go` in order to build libcompose.
+
+### Building with `docker`
+
 You need Docker and ``make`` and then run the ``binary`` target. This
 will create binary for all platform in the `bundles` folder. 
 
@@ -57,6 +65,20 @@ libcompose-cli_linux-386*     libcompose-cli_windows-386.exe*
 ```
 
 
+### Building with `go`
+
+- You need `go` v1.5
+- You need to set export `GO15VENDOREXPERIMENT=1` environment variable
+- If your working copy is not in your `GOPATH`, you need to set it
+accordingly.
+
+```bash
+$ go generate
+# Generate some stuff
+$ go build -o libcompose ./cli/main
+```
+
+
 ## Running
 
 A partial implementation of the libcompose-cli CLI is also implemented in Go. The primary purpose of this code is so one can easily test the behavior of libcompose.
@@ -73,11 +95,13 @@ libcompose-cli_linux-386
 libcompose-cli_windows-386.exe
 ```
 
-### Tests
+## Tests (unit & integration)
 
 
 You can run unit tests using the `test-unit` target and the
-integration test using the `test-integration` target.
+integration test using the `test-integration` target. If you don't use
+Docker and `make` to build `libcompose`, you can use `go test` and the
+following scripts : `script/test-unit` and `script/test-integration`.
 
 ```bash
 $ make test-unit
@@ -98,15 +122,6 @@ Test success
 ## Current status
 
 The project is still being kickstarted... But it does a lot.  Please try it out and help us find bugs.
-
-## Note for Kubernetes API package
-
-In order to getting k8s api, executing below commands:
-
-```bash
-$ export GOPATH=/path/to/kcompose/Godeps/_workspace
-$ go get k8s.io/kubernetes/pkg/api
-```
 
 ## Contributing
 

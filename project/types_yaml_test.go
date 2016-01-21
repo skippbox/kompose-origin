@@ -1,9 +1,11 @@
 package project
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v2"
+	yaml "github.com/cloudfoundry-incubator/candiedyaml"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -21,14 +23,10 @@ func newTestConfig() TestConfig {
 		SystemContainers: map[string]*ServiceConfig{
 			"udev": {
 				Image:      "udev",
-				Entrypoint: Command{[]string{}},
-				Command:    Command{[]string{}},
 				Restart:    "always",
 				Net:        "host",
 				Privileged: true,
-				Dns:        Stringorslice{[]string{"8.8.8.8", "8.8.4.4"}},
-				DnsSearch:  Stringorslice{[]string{}},
-				EnvFile:    Stringorslice{[]string{}},
+				DNS:        Stringorslice{[]string{"8.8.8.8", "8.8.4.4"}},
 				Environment: MaporEqualSlice{[]string{
 					"DAEMON=true",
 				}},
@@ -36,27 +34,19 @@ func newTestConfig() TestConfig {
 					"io.rancher.os.detach": "true",
 					"io.rancher.os.scope":  "system",
 				}},
-				Links: MaporColonSlice{[]string{}},
 				VolumesFrom: []string{
 					"system-volumes",
 				},
 			},
 			"system-volumes": {
-				Image:       "state",
-				Entrypoint:  Command{[]string{}},
-				Command:     Command{[]string{}},
-				Net:         "none",
-				ReadOnly:    true,
-				Privileged:  true,
-				Dns:         Stringorslice{[]string{}},
-				DnsSearch:   Stringorslice{[]string{}},
-				EnvFile:     Stringorslice{[]string{}},
-				Environment: MaporEqualSlice{[]string{}},
+				Image:      "state",
+				Net:        "none",
+				ReadOnly:   true,
+				Privileged: true,
 				Labels: SliceorMap{map[string]string{
 					"io.rancher.os.createonly": "true",
 					"io.rancher.os.scope":      "system",
 				}},
-				Links: MaporColonSlice{[]string{}},
 				Volumes: []string{
 					"/dev:/host/dev",
 					"/var/lib/rancher/conf:/var/lib/rancher/conf",
@@ -116,8 +106,13 @@ func TestStringorsliceYaml(t *testing.T) {
 }
 
 type StructSliceorMap struct {
-	Foos SliceorMap //`yaml:",omitempty"` /*uncomment that `yaml` nonsense to crash the tests*/
-	Bars []string
+	Foos SliceorMap `yaml:"foos,omitempty"`
+	Bars []string   `yaml:"bars"`
+}
+
+type StructCommand struct {
+	Entrypoint Command `yaml:"entrypoint,flow,omitempty"`
+	Command    Command `yaml:"command,flow,omitempty"`
 }
 
 func TestSliceOrMapYaml(t *testing.T) {
@@ -137,21 +132,26 @@ func TestSliceOrMapYaml(t *testing.T) {
 	assert.Equal(t, map[string]string{"bar": "baz", "far": "faz"}, s2.Foos.parts)
 }
 
-var sampleStructSliceorMap = `udav:
-  foos:
-    io.rancher.os.bar: baz
-    io.rancher.os.far: faz
-  bars: []
+var sampleStructSliceorMap = `
+foos:
+  io.rancher.os.bar: baz
+  io.rancher.os.far: true
+bars: []
 `
+
+func TestUnmarshalSliceOrMap(t *testing.T) {
+	s := StructSliceorMap{}
+	err := yaml.Unmarshal([]byte(sampleStructSliceorMap), &s)
+	assert.Equal(t, fmt.Errorf("Cannot unmarshal 'true' of type bool into a string value"), err)
+}
 
 func TestStr2SliceOrMapPtrMap(t *testing.T) {
 	s := map[string]*StructSliceorMap{"udav": {
-		Foos: SliceorMap{map[string]string{"io.rancher.os.bar": "baz", "io.rancher.os.far": "faz"}},
+		Foos: SliceorMap{map[string]string{"io.rancher.os.bar": "baz", "io.rancher.os.far": "true"}},
 		Bars: []string{},
 	}}
 	d, err := yaml.Marshal(&s)
 	assert.Nil(t, err)
-	assert.Equal(t, sampleStructSliceorMap, string(d))
 
 	s2 := map[string]*StructSliceorMap{}
 	yaml.Unmarshal(d, &s2)
@@ -191,4 +191,45 @@ func TestMaporsliceYaml(t *testing.T) {
 	assert.Equal(t, 2, len(s2.Foo.parts))
 	assert.True(t, contains(s2.Foo.parts, "bar=baz"))
 	assert.True(t, contains(s2.Foo.parts, "far=faz"))
+}
+
+var sampleStructCommand = `command: bash`
+
+func TestUnmarshalCommand(t *testing.T) {
+	s := &StructCommand{}
+	err := yaml.Unmarshal([]byte(sampleStructCommand), s)
+
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"bash"}, s.Command.Slice())
+	assert.Nil(t, s.Entrypoint.Slice())
+
+	bytes, err := yaml.Marshal(s)
+	assert.Nil(t, err)
+
+	s2 := &StructCommand{}
+	err = yaml.Unmarshal(bytes, s2)
+
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"bash"}, s2.Command.Slice())
+	assert.Nil(t, s2.Entrypoint.Slice())
+}
+
+var sampleEmptyCommand = `{}`
+
+func TestUnmarshalEmptyCommand(t *testing.T) {
+	s := &StructCommand{}
+	err := yaml.Unmarshal([]byte(sampleEmptyCommand), s)
+
+	assert.Nil(t, err)
+	assert.Nil(t, s.Command.Slice())
+
+	bytes, err := yaml.Marshal(s)
+	assert.Nil(t, err)
+	assert.Equal(t, "entrypoint: []\ncommand: []", strings.TrimSpace(string(bytes)))
+
+	s2 := &StructCommand{}
+	err = yaml.Unmarshal(bytes, s2)
+
+	assert.Nil(t, err)
+	assert.Nil(t, s2.Command.Slice())
 }

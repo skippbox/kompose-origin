@@ -4,7 +4,9 @@ LIBCOMPOSE_ENVS := \
 	-e OS_PLATFORM_ARG \
 	-e OS_ARCH_ARG \
 	-e DOCKER_TEST_HOST \
-	-e TESTFLAGS
+	-e TESTDIRS \
+	-e TESTFLAGS \
+	-e TESTVERBOSE
 
 # (default to no bind mount if DOCKER_HOST is set)
 BIND_DIR := $(if $(DOCKER_HOST),,bundles)
@@ -18,18 +20,22 @@ DOCKER_RUN_LIBCOMPOSE := docker run --rm -it --privileged $(LIBCOMPOSE_ENVS) $(L
 default: binary
 
 all: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh
 
 binary: build
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary
 
 test: build
-	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary test-unit test-integration
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary test-unit test-integration test-acceptance
 
 test-unit: build
-	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary test-unit
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh test-unit
 
 test-integration: build
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary test-integration
+
+test-acceptance: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh binary test-acceptance
 
 validate-dco: build
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-dco
@@ -37,7 +43,17 @@ validate-dco: build
 validate-gofmt: build
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-gofmt
 
-validate: validate-dco validate-gofmt
+validate-lint: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-lint
+
+validate-vet: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-vet
+
+validate-git-marks: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-git-marks
+
+validate: build
+	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh validate-dco validate-git-marks validate-gofmt validate-lint validate-vet
 
 shell: build
 	$(DOCKER_RUN_LIBCOMPOSE) bash

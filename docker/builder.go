@@ -1,8 +1,6 @@
 package docker
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -11,28 +9,36 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/api"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/fileutils"
 	"github.com/docker/docker/utils"
 	"github.com/docker/libcompose/project"
-	"github.com/samalba/dockerclient"
+	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
+// DefaultDockerfileName is the default name of a Dockerfile
+const DefaultDockerfileName = "Dockerfile"
+
+// Builder defines methods to provide a docker builder. This makes libcompose
+// not tied up to the docker daemon builder.
 type Builder interface {
 	Build(p *project.Project, service project.Service) (string, error)
 }
 
+// DaemonBuilder is the daemon "docker build" Builder implementation.
 type DaemonBuilder struct {
 	context *Context
 }
 
+// NewDaemonBuilder creates a DaemonBuilder based on the specified context.
 func NewDaemonBuilder(context *Context) *DaemonBuilder {
 	return &DaemonBuilder{
 		context: context,
 	}
 }
 
+// Build implements Builder. It consumes the docker build API endpoint and sends
+// a tar of the specified service build context.
 func (d *DaemonBuilder) Build(p *project.Project, service project.Service) (string, error) {
 	if service.Config().Build == "" {
 		return service.Config().Image, nil
@@ -49,31 +55,25 @@ func (d *DaemonBuilder) Build(p *project.Project, service project.Service) (stri
 	client := d.context.ClientFactory.Create(service)
 
 	logrus.Infof("Building %s...", tag)
-	output, err := client.BuildImage(&dockerclient.BuildImage{
-		Context:  context,
-		RepoName: tag,
-		Remove:   true,
+
+	err = client.BuildImage(dockerclient.BuildImageOptions{
+		InputStream:    context,
+		OutputStream:   os.Stdout,
+		RawJSONStream:  false,
+		Name:           tag,
+		RmTmpContainer: true,
+		Dockerfile:     service.Config().Dockerfile,
+		NoCache:        d.context.NoCache,
 	})
+
 	if err != nil {
 		return "", err
-	}
-
-	defer output.Close()
-
-	// Don't really care about errors in the scanner
-	scanner := bufio.NewScanner(output)
-	for scanner.Scan() {
-		text := scanner.Text()
-		data := map[string]interface{}{}
-		err := json.Unmarshal([]byte(text), &data)
-		if stream, ok := data["stream"]; ok && err == nil {
-			fmt.Print(stream)
-		}
 	}
 
 	return tag, nil
 }
 
+// CreateTar create a build context tar for the specified project and service name.
 func CreateTar(p *project.Project, name string) (io.ReadCloser, error) {
 	// This code was ripped off from docker/api/client/build.go
 
@@ -90,7 +90,7 @@ func CreateTar(p *project.Project, name string) (io.ReadCloser, error) {
 
 	if dockerfileName == "" {
 		// No -f/--file was specified so use the default
-		dockerfileName = api.DefaultDockerfileName
+		dockerfileName = DefaultDockerfileName
 		filename = filepath.Join(absRoot, dockerfileName)
 
 		// Just to be nice ;-) look for 'dockerfile' too but only
@@ -125,10 +125,21 @@ func CreateTar(p *project.Project, name string) (io.ReadCloser, error) {
 		return nil, fmt.Errorf("Cannot locate Dockerfile: %s", origDockerfile)
 	}
 	var includes = []string{"."}
+	var excludes []string
 
-	excludes, err := utils.ReadDockerIgnore(path.Join(root, ".dockerignore"))
+	dockerIgnorePath := path.Join(root, ".dockerignore")
+	dockerIgnore, err := os.Open(dockerIgnorePath)
 	if err != nil {
-		return nil, err
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+		logrus.Warnf("Error while reading .dockerignore (%s) : %s", dockerIgnorePath, err.Error())
+		excludes = make([]string, 0)
+	} else {
+		excludes, err = utils.ReadDockerIgnore(dockerIgnore)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// If .dockerignore mentions .dockerignore or the Dockerfile
