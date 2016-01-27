@@ -2,4 +2,4 @@
 set -e
 
 cd $(dirname $0)/..
-rm -rf bundles/libcompose-cli* || true
+rm -rf bundles/kompose* || true
