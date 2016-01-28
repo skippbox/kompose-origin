@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"os/user"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,7 +20,7 @@ import (
 	"github.com/docker/libcompose/project/options"
 
 	"k8s.io/kubernetes/pkg/api"
-        "k8s.io/kubernetes/pkg/util/intstr"
+  "k8s.io/kubernetes/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 )
@@ -290,6 +289,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 	}
 }
 
+// ProjectPort prints the public port for a port binding.
 func ProjectPort(p *project.Project, c *cli.Context) {
 	if len(c.Args()) != 2 {
 		return cli.NewExitError("Please pass arguments in the form: SERVICE PORT", 1)
