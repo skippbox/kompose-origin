@@ -3,6 +3,7 @@ package command
 import (
 	"github.com/codegangsta/cli"
 	"github.com/docker/libcompose/cli/app"
+	k8sApp "github.com/docker/libcompose/cli/k8s/app"
 	"github.com/docker/libcompose/project"
 )
 
@@ -216,14 +217,50 @@ func KillCommand(factory app.ProjectFactory) cli.Command {
 func KuberCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "k8s",
-		Usage:  "Convert docker-compose.yml to Kubernetes object",
-		Action: app.WithProject(factory, app.ProjectKuber),
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "file,f",
-				Usage: "Specify an alternate compose file (default: docker-compose.yml)",
-				Value:	"docker-compose.yml",
-				EnvVar: "COMPOSE_FILE",
+		Usage:  "Kubernetes specific commands",
+		Subcommands: []cli.Command {
+			{
+				Name:	"convert",
+				Usage:	"Convert docker-compose.yml to Kubernetes object and submit",
+				Action: app.WithProject(factory, k8sApp.ProjectKuber),
+				Flags: []cli.Flag{
+					cli.StringFlag{
+						Name:  "file,f",
+						Usage: "Specify an alternate compose file (default: docker-compose.yml)",
+						Value:	"docker-compose.yml",
+						EnvVar: "COMPOSE_FILE",
+					},
+				},
+			},
+			{
+				Name:	"ps",
+				Usage:	"Get active data in the kubernetes cluster",
+				Action:	app.WithProject(factory, k8sApp.ProjectKuberPS),
+				Flags: []cli.Flag {
+					cli.BoolFlag {
+						Name:	"services,s",
+						Usage:	"Get active services",
+					},
+					cli.BoolFlag {
+						Name:	"rc,r",
+						Usage:	"Get active replication controller",
+					},
+				},
+			},
+			{
+				Name:	"delete",
+				Usage:	"Remove instantiated services/rc from kubernetes",
+				Action:	app.WithProject(factory, k8sApp.ProjectKuberDelete),
+				Flags:	[]cli.Flag {
+					cli.BoolFlag {
+						Name: "rc,r",
+						Usage: "Remove active replication controllers",
+					},
+					cli.BoolFlag {
+						Name: "services,s",
+						Usage: "Remove active services",
+					},
+				},
 			},
 		},
 	}
@@ -233,7 +270,7 @@ func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
 		Name:   "kubeconfig",
 		Usage:  "Config kubernetes api server",
-		Action: app.WithProject(factory, app.ProjectKuberConfig),
+		Action: app.WithProject(factory, k8sApp.ProjectKuberConfig),
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "host",
