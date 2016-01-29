@@ -14,11 +14,11 @@ func main() {
 	factory := &dockerApp.ProjectFactory{}
 
 	app := cli.NewApp()
-	app.Name = "libcompose-cli"
-	app.Usage = "Command line interface for libcompose."
+	app.Name = "kompose"
+	app.Usage = "Command line interface for Skippbox."
 	app.Version = version.VERSION + " (" + version.GITCOMMIT + ")"
-	app.Author = "Docker Compose Contributors"
-	app.Email = "https://github.com/docker/libcompose"
+	app.Author = "Skippbox Compose Contributors"
+	app.Email = "https://github.com/skippbox/kompose"
 	app.Before = cliApp.BeforeApp
 	app.Flags = append(command.CommonFlags(), dockerApp.DockerClientFlags()...)
 	app.Commands = []cli.Command{
