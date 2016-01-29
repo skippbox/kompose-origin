@@ -9,7 +9,7 @@ export DOCKER_DAEMON_VERSION="${DEFAULT_DOCKER_VERSION}"
 
 bundle .integration-daemon-start
 
-cp bundles/libcompose-cli venv/bin/docker-compose
+cp bundles/kompose_linux-amd64 venv/bin/docker-compose
 . venv/bin/activate
 
 docker-compose --version

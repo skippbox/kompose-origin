@@ -87,6 +87,10 @@ func (s *CliSuite) TearDownTest(c *C) {
 	}
 }
 
+var _ = Suite(&RunSuite{
+	command: "../bundles/kompose_linux-amd64",
+})
+
 func (s *CliSuite) CreateProjectFromText(c *C, input string) string {
 	return s.ProjectFromText(c, "create", input)
 }
