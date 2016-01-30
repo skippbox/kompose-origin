@@ -380,6 +380,21 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 					},
 				},
 			},
+			{
+				Name:	"scale",
+				Usage:	"Globally scale instantiated replication controllers",
+				Action:	app.WithProject(factory, k8sApp.ProjectKuberScale),
+				Flags:	[]cli.Flag {
+					cli.IntFlag {
+						Name:	"scale",
+						Usage:	"New number of replicas",
+					},
+					cli.StringFlag {
+						Name:	"rc",
+						Usage:	"A specific replication controller to scale",
+					},
+				},
+			},
 		},
 	}
 }
