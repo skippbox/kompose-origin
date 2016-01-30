@@ -120,6 +120,34 @@ func ProjectKuberDelete(p *project.Project, c *cli.Context) {
     }
 }
 
+func ProjectKuberScale(p *project.Project, c *cli.Context) {
+    server := getK8sServer("")
+    version := "v1"
+    client := client.NewOrDie(&client.Config{Host: server, Version: version})
+
+    if c.Int("scale") <= 0 {
+        logrus.Fatalf("Scale must be defined and a positive number")
+    }
+
+    for name := range p.Configs {
+        if len(c.String("rc")) == 0 || c.String("rc") == name {
+            s, err := client.ExtensionsClient.Scales(api.NamespaceDefault).Get("ReplicationController", name)
+            if err != nil {
+                logrus.Fatalf("Error retrieving scaling data: %s\n", err)
+            }
+
+            s.Spec.Replicas = c.Int("scale")
+
+            s, err = client.ExtensionsClient.Scales(api.NamespaceDefault).Update("ReplicationController", s)
+            if err != nil {
+                logrus.Fatalf("Error updating scaling data: %s\n", err)
+            }
+
+            fmt.Printf("Scaling %s to: %d\n", name, s.Spec.Replicas)
+        }
+    }
+}
+
 func ProjectKuber(p *project.Project, c *cli.Context) {
     composeFile := c.String("file")
 
