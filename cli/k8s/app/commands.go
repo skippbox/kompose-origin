@@ -106,6 +106,10 @@ func ProjectKuberDelete(p *project.Project, c *cli.Context) {
     client := client.NewOrDie(&client.Config{Host: server, Version: version})
 
     for name := range p.Configs {
+		if len(c.String("name")) > 0 && name != c.String("name") {
+			continue
+		}
+
         if c.BoolT("services") {
             err := client.Services(api.NamespaceDefault).Delete(name)
             if err != nil {

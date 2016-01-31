@@ -260,6 +260,10 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Name: "services,s",
 						Usage: "Remove active services",
 					},
+					cli.StringFlag {
+						Name:	"name",
+						Usage:	"Name of the object to remove",
+					},
 				},
 			},
 			{
