@@ -348,6 +348,14 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Value:	"docker-compose.yml",
 						EnvVar: "COMPOSE_FILE",
 					},
+					cli.BoolFlag{
+						Name:	"deployment,d",
+						Usage:	"Generate a deployment resource file",
+					},
+					cli.BoolFlag{
+						Name:	"chart,c",
+						Usage:	"Create a chart deployment",
+					},
 				},
 			},
 			{

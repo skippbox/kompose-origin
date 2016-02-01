@@ -14,6 +14,7 @@ import (
     "io/ioutil"
 
     "k8s.io/kubernetes/pkg/api"
+    "k8s.io/kubernetes/pkg/apis/extensions"
     "k8s.io/kubernetes/pkg/util"
     "k8s.io/kubernetes/pkg/api/unversioned"
     client "k8s.io/kubernetes/pkg/client/unversioned"
@@ -153,6 +154,7 @@ func ProjectKuberScale(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuber(p *project.Project, c *cli.Context) {
+    createInstance := true
     composeFile := c.String("file")
 
     p = project.NewProject(&project.Context{
@@ -165,6 +167,10 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
     }
 
     server := getK8sServer("")
+
+    if c.BoolT("deployment") || c.BoolT("chart") {
+        createInstance = false
+    }
 
     var mServices map[string]api.Service = make(map[string]api.Service)
     var serviceLinks []string
@@ -211,6 +217,35 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             },
             Spec: api.ServiceSpec{
                 Selector: map[string]string{"service": name},
+            },
+        }
+
+        dc := &extensions.Deployment {
+            TypeMeta: unversioned.TypeMeta {
+                Kind:       "Deployment",
+                APIVersion: "extensions/v1beta1",
+            },
+            ObjectMeta: api.ObjectMeta{
+                Name: name,
+                Labels: map[string]string{"service": name},
+            },
+            Spec: extensions.DeploymentSpec {
+                Replicas: 1,
+                Selector: map[string]string{"service": name},
+                UniqueLabelKey: p.Name,
+                Template: &api.PodTemplateSpec {
+                    ObjectMeta: api.ObjectMeta {
+                        Labels: map[string]string {"service": name},
+                    },
+                    Spec: api.PodSpec {
+                        Containers: []api.Container {
+                            {
+                                Name:  name,
+                                Image: service.Image,
+                            },
+                        },
+                    },
+                },
             },
         }
 
@@ -294,6 +329,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         logrus.Debugf("%s\n", datasc)
 
+        datadc, err := json.MarshalIndent(dc, "", "  ")
+        if err != nil {
+            logrus.Fatalf("Failed to marshal the deployment container: %v", err)
+        }
+
+        logrus.Debugf("%s\n", datadc)
+
         mServices[name] = *sc
 
         if len(service.Links.Slice()) > 0 {
@@ -313,26 +355,38 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         }
 
         // call create RC api
-        rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
-        if err != nil {
-            fmt.Println(err)
+        if createInstance == false {
+            rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
+            if err != nil {
+                fmt.Println(err)
+            }
+            logrus.Debugf("%s\n", rcCreated)
         }
-        logrus.Debugf("%s\n", rcCreated)
 
         fileRC := fmt.Sprintf("%s-rc.yaml", name)
         if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
             logrus.Fatalf("Failed to write replication controller: %v", err)
         }
 
+        /* Create the deployment container */
+        if c.BoolT("deployment") {
+            fileDC := fmt.Sprintf("%s-deployment.yaml", name)
+            if err := ioutil.WriteFile(fileDC, []byte(datadc), 0644); err != nil {
+                logrus.Fatalf("Failed to write deployment container: %v", err)
+            }
+        }
+
         for k, v := range mServices {
             for i :=0; i < len(serviceLinks); i++ {
                 if serviceLinks[i] == k {
                     // call create SVC api
-                    scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
-                    if err != nil {
-                        fmt.Println(err)
+                    if createInstance == false {
+                        scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
+                        if err != nil {
+                            fmt.Println(err)
+                        }
+                        logrus.Debugf("%s\n", scCreated)
                     }
-                    logrus.Debugf("%s\n", scCreated)
 
                     datasvc, er := json.MarshalIndent(v, "", "  ")
                     if er != nil {
@@ -345,6 +399,16 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                         logrus.Fatalf("Failed to write service controller: %v", err)
                     }
                 }
+            }
+        }
+    }
+
+    /* Need to iterate through one more time to ensure we capture all service/rc */
+    for name := range p.Configs {
+        if c.BoolT("chart") {
+            err := generateHelm(composeFile, name)
+            if err != nil {
+                logrus.Fatalf("Failed to create Chart data: %s\n", err)
             }
         }
     }
