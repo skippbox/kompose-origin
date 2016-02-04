@@ -246,11 +246,11 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 				Action:	app.WithProject(factory, k8sApp.ProjectKuberPS),
 				Flags: []cli.Flag {
 					cli.BoolFlag {
-						Name:	"services,s",
+						Name:	"service,svc",
 						Usage:	"Get active services",
 					},
 					cli.BoolFlag {
-						Name:	"rc,r",
+						Name:	"replicationcontroller,rc",
 						Usage:	"Get active replication controller",
 					},
 				},
@@ -261,11 +261,11 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 				Action:	app.WithProject(factory, k8sApp.ProjectKuberDelete),
 				Flags:	[]cli.Flag {
 					cli.BoolFlag {
-						Name: "rc,r",
+						Name: "replicationcontroller,rc",
 						Usage: "Remove active replication controllers",
 					},
 					cli.BoolFlag {
-						Name: "services,s",
+						Name: "service,svc",
 						Usage: "Remove active services",
 					},
 					cli.StringFlag {
@@ -284,7 +284,7 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Usage:	"New number of replicas",
 					},
 					cli.StringFlag {
-						Name:	"rc",
+						Name:	"replicationcontroller,rc",
 						Usage:	"A specific replication controller to scale",
 					},
 				},
