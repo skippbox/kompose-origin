@@ -62,22 +62,23 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
 
             if err != nil {
                 logrus.Debugf("Cannot find service for: ", name)
-            }
+            } else {
 
-            for i := range services.Spec.Ports {
-                p := strconv.Itoa(services.Spec.Ports[i].Port)
-                ports += ports + string(services.Spec.Ports[i].Protocol) + "(" + p + "),"
-            }
+                for i := range services.Spec.Ports {
+                    p := strconv.Itoa(services.Spec.Ports[i].Port)
+                    ports += ports + string(services.Spec.Ports[i].Protocol) + "(" + p + "),"
+                }
 
-            for k,v := range services.ObjectMeta.Labels {
-                selectors += selectors + k + "=" + v + ","
-            }
+                for k,v := range services.ObjectMeta.Labels {
+                    selectors += selectors + k + "=" + v + ","
+                }
 
-            ports = strings.TrimSuffix(ports, ",")
-            selectors = strings.TrimSuffix(selectors, ",")
+                ports = strings.TrimSuffix(ports, ",")
+                selectors = strings.TrimSuffix(selectors, ",")
 
-            fmt.Printf("%-20s%-20s%-20s%-20s\n", services.ObjectMeta.Name,
-                services.Spec.ClusterIP, ports, selectors)
+                fmt.Printf("%-20s%-20s%-20s%-20s\n", services.ObjectMeta.Name,
+                    services.Spec.ClusterIP, ports, selectors)
+            }   
 
         }
 	}
@@ -95,23 +96,24 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
 
             if err != nil {
                 logrus.Debugf("Cannot find rc for: ", string(name))
-            }
+            } else {
 
-            for k,v := range rc.Spec.Selector {
-                selectors += selectors + k + "=" + v + ","
-            }
+                for k,v := range rc.Spec.Selector {
+                    selectors += selectors + k + "=" + v + ","
+                }
 
-            for i := range rc.Spec.Template.Spec.Containers {
-                c := rc.Spec.Template.Spec.Containers[i]
-                containers += containers + c.Name + ","
-                images += images + c.Image + ","
-            }
-            selectors = strings.TrimSuffix(selectors, ",")
-            containers = strings.TrimSuffix(containers, ",")
-            images = strings.TrimSuffix(images, ",")
+                for i := range rc.Spec.Template.Spec.Containers {
+                    c := rc.Spec.Template.Spec.Containers[i]
+                    containers += containers + c.Name + ","
+                    images += images + c.Image + ","
+                }
+                selectors = strings.TrimSuffix(selectors, ",")
+                containers = strings.TrimSuffix(containers, ",")
+                images = strings.TrimSuffix(images, ",")
 
-            fmt.Printf("%-15s%-15s%-30s%-10d%-20s\n", rc.ObjectMeta.Name, containers,
-                images, rc.Spec.Replicas, selectors)
+                fmt.Printf("%-15s%-15s%-30s%-10d%-20s\n", rc.ObjectMeta.Name, containers,
+                    images, rc.Spec.Replicas, selectors)
+            }
         }
 	}
 
