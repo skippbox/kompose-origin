@@ -38,6 +38,8 @@ $ kubectl get rc
 CONTROLLER   CONTAINER(S)   IMAGE(S)                SELECTOR        REPLICAS   AGE
 redis        redis          redis:3.0               service=redis   1          2s
 web          web            tuna/docker-counter23   service=web     1          2s
+$ ls
+docker-compose.yml	redis-rc.yaml		redis-svc.yaml		web-rc.yaml
 ```
 
 kompose also allows you to list the replication controllers and services with the `ps` subcommand.
@@ -72,6 +74,39 @@ redis        redis          redis:3.0   service=redis   3          45s
 
 Note that you can of course manage the services and replication controllers that have been created with `kubectl`.
 The command of kompose have been extended to match the `docker-compose` commands.
+
+## Alternate formats
+
+The default `kompose` transformation will generate replication controllers and services. You can alternatively generate [Deployment](https://github.com/kubernetes/kubernetes/blob/release-1.1/docs/user-guide/managing-deployments.md) objects or [Helm](https://github.com/helm/helm) charts.
+
+```bash
+$ kompose k8s convert --d
+$ ls
+$ tree
+.
+├── docker-compose.yml
+├── redis-deployment.yaml
+├── redis-rc.yaml
+├── redis-svc.yaml
+├── web-deployment.yaml
+└── web-rc.yaml
+```
+
+The `*deployment.yaml` files contain the Deployments objects
+
+```bash
+$ kompose k8s convert --c
+$ tree docker-compose/
+docker-compose/
+├── Chart.yaml
+├── README.md
+└── manifests
+    ├── redis-rc.yaml
+    ├── redis-svc.yaml
+    └── web-rc.yaml
+```
+
+The chart structure is aimed at providing a skeleton for building your Helm charts.
 
 ## Building
 
