@@ -396,7 +396,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         for k, v := range mServices {
             for i :=0; i < len(serviceLinks); i++ {
-                if serviceLinks[i] == k {
+                //if serviceLinks[i] == k {
                     // call create SVC api
                     if createInstance == true {
                         scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
@@ -416,7 +416,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                     if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
                         logrus.Fatalf("Failed to write service controller: %v", err)
                     }
-                }
+                //}
             }
         }
     }
