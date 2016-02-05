@@ -269,19 +269,15 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         // Configure the environment variables.
         var envs []api.EnvVar
-        for _, env := range service.Environment {
+        for _, env := range service.Environment.Slice() {
             var character string = "="
             if strings.Contains(env, character) {
                 value := env[strings.Index(env, character) + 1: len(env)]
                 name :=  env[0:strings.Index(env, character)]
-                if err != nil {
-                    logrus.Fatalf("Invalid container env %s for service %s", env, name)
-                }
                 envs = append(envs, api.EnvVar{
                                                Name: name,
                                                Value: value,
-                                              }
-                             )
+                                              })
             } else {
                 logrus.Fatalf("Invalid container env %s for service %s", env, name)
             }
