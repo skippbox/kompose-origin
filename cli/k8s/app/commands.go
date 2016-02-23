@@ -399,14 +399,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             logrus.Debugf("%s\n", rcCreated)
         }
 
-        fileRC := fmt.Sprintf("%s-rc.yaml", name)
+        fileRC := fmt.Sprintf("%s-rc.json", name)
         if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
             logrus.Fatalf("Failed to write replication controller: %v", err)
         }
 
         /* Create the deployment container */
         if c.BoolT("deployment") {
-            fileDC := fmt.Sprintf("%s-deployment.yaml", name)
+            fileDC := fmt.Sprintf("%s-deployment.json", name)
             if err := ioutil.WriteFile(fileDC, []byte(datadc), 0644); err != nil {
                 logrus.Fatalf("Failed to write deployment container: %v", err)
             }
@@ -429,7 +429,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                         logrus.Fatalf("Failed to marshal the service controller: %v", er)
                     }
 
-                    fileSVC := fmt.Sprintf("%s-svc.yaml", k)
+                    fileSVC := fmt.Sprintf("%s-svc.json", k)
 
                     if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
                         logrus.Fatalf("Failed to write service controller: %v", err)
