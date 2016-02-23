@@ -96,21 +96,21 @@ home:
     }
 
     /* Copy all yaml files into the newly created manifests directory */
-    infile, err := ioutil.ReadFile(svcname + "-rc.yaml")
+    infile, err := ioutil.ReadFile(svcname + "-rc.json")
     if err != nil {
         logrus.Infof("Error reading %s: %s\n", svcname + "-rc.yaml", err)
         return err
     }
 
-    err = ioutil.WriteFile(manifestDir + string(os.PathSeparator) + svcname + "-rc.yaml", infile, 0644)
+    err = ioutil.WriteFile(manifestDir + string(os.PathSeparator) + svcname + "-rc.json", infile, 0644)
     if err != nil {
         return err
     }
 
     /* The svc file is optional */
-    infile, err = ioutil.ReadFile(svcname + "-svc.yaml")
+    infile, err = ioutil.ReadFile(svcname + "-svc.json")
     if err == nil {
-        err = ioutil.WriteFile(manifestDir + string(os.PathSeparator) + svcname + "-svc.yaml", infile, 0644)
+        err = ioutil.WriteFile(manifestDir + string(os.PathSeparator) + svcname + "-svc.json", infile, 0644)
         if err != nil {
            return err
         }
