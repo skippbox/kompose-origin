@@ -34,6 +34,8 @@ import (
     "k8s.io/kubernetes/pkg/util"
     "k8s.io/kubernetes/pkg/api/unversioned"
     client "k8s.io/kubernetes/pkg/client/unversioned"
+
+    "github.com/ghodss/yaml"
 )
 
 /* Kubernetes specific configuration */
@@ -78,7 +80,7 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
 
                 fmt.Printf("%-20s%-20s%-20s%-20s\n", services.ObjectMeta.Name,
                     services.Spec.ClusterIP, ports, selectors)
-            }   
+            }
 
         }
 	}
@@ -173,6 +175,7 @@ func ProjectKuberScale(p *project.Project, c *cli.Context) {
 
 func ProjectKuber(p *project.Project, c *cli.Context) {
     createInstance := true
+    generateYaml := false
     composeFile := c.String("file")
 
     p = project.NewProject(&project.Context{
@@ -188,6 +191,10 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
     if c.BoolT("deployment") || c.BoolT("chart") {
         createInstance = false
+    }
+
+    if c.BoolT("yaml") {
+      generateYaml = true
     }
 
     var mServices map[string]api.Service = make(map[string]api.Service)
@@ -352,20 +359,35 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
         }
 
+        // convert datarc to json / yaml
         datarc, err := json.MarshalIndent(rc, "", "  ")
+        if generateYaml == true {
+          datarc, err = yaml.Marshal(rc)
+        }
+
         if err != nil {
             logrus.Fatalf("Failed to marshal the replication controller: %v", err)
         }
         logrus.Debugf("%s\n", datarc)
 
+        // convert datasc to json / yaml
         datasc, er := json.MarshalIndent(sc, "", "  ")
+        if generateYaml == true {
+          datasc, er = yaml.Marshal(sc)
+        }
+
         if er != nil {
             logrus.Fatalf("Failed to marshal the service controller: %v", er)
         }
 
         logrus.Debugf("%s\n", datasc)
 
+        // convert datadc to json / yaml
         datadc, err := json.MarshalIndent(dc, "", "  ")
+        if generateYaml == true {
+          datadc, err = yaml.Marshal(dc)
+        }
+
         if err != nil {
             logrus.Fatalf("Failed to marshal the deployment container: %v", err)
         }
@@ -400,6 +422,9 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         }
 
         fileRC := fmt.Sprintf("%s-rc.json", name)
+        if generateYaml == true {
+          fileRC = fmt.Sprintf("%s-rc.yaml", name)
+        }
         if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
             logrus.Fatalf("Failed to write replication controller: %v", err)
         }
@@ -407,6 +432,9 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         /* Create the deployment container */
         if c.BoolT("deployment") {
             fileDC := fmt.Sprintf("%s-deployment.json", name)
+            if generateYaml == true {
+              fileDC = fmt.Sprintf("%s-deployment.yaml", name)
+            }
             if err := ioutil.WriteFile(fileDC, []byte(datadc), 0644); err != nil {
                 logrus.Fatalf("Failed to write deployment container: %v", err)
             }
@@ -430,6 +458,9 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                     }
 
                     fileSVC := fmt.Sprintf("%s-svc.json", k)
+                    if generateYaml == true {
+                      fileSVC = fmt.Sprintf("%s-svc.yaml", k)
+                    }
 
                     if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
                         logrus.Fatalf("Failed to write service controller: %v", err)

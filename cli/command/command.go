@@ -238,6 +238,10 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Name:	"chart,c",
 						Usage:	"Create a chart deployment",
 					},
+					cli.BoolFlag{
+						Name: "yaml, y",
+						Usage: "Generate a deployment resource file in yaml format",
+					},
 				},
 			},
 			{
