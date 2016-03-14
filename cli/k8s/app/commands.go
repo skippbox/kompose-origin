@@ -281,12 +281,30 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             if strings.Contains(env, character) {
                 value := env[strings.Index(env, character) + 1: len(env)]
                 name :=  env[0:strings.Index(env, character)]
+                name = strings.TrimSpace(name)
+                value = strings.TrimSpace(value)
                 envs = append(envs, api.EnvVar{
                                                Name: name,
                                                Value: value,
                                               })
             } else {
-                logrus.Fatalf("Invalid container env %s for service %s", env, name)
+                character = ":"
+                if strings.Contains(env, character) {
+                  var charQuote string = "'"
+                  value := env[strings.Index(env, character) + 1: len(env)]
+                  name := env[0:strings.Index(env, character)]
+                  name = strings.TrimSpace(name)
+                  value = strings.TrimSpace(value)
+                  if strings.Contains(value, charQuote) {
+                    value = strings.Trim(value, "'")
+                  }
+                  envs = append(envs, api.EnvVar{
+                                                 Name: name,
+                                                 Value: value,
+                                                })
+                } else {
+                  logrus.Fatalf("Invalid container env %s for service %s", env, name)
+                }
             }
         }
 
@@ -299,6 +317,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             if strings.Contains(port, character) {
                 //portNumber := port[0:strings.Index(port, character)]
                 targetPortNumber := port[strings.Index(port, character) + 1: len(port)]
+                targetPortNumber = strings.TrimSpace(targetPortNumber)
                 targetPortNumberInt, err := strconv.Atoi(targetPortNumber)
                 if err != nil {
                     logrus.Fatalf("Invalid container port %s for service %s", port, name)
@@ -321,7 +340,9 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             var character string = ":"
             if strings.Contains(port, character) {
                 portNumber := port[0:strings.Index(port, character)]
+                portNumber = strings.TrimSpace(portNumber)
                 targetPortNumber := port[strings.Index(port, character) + 1: len(port)]
+                targetPortNumber = strings.TrimSpace(targetPortNumber)
                 portNumberInt, err := strconv.Atoi(portNumber)
                 if err != nil {
                     logrus.Fatalf("Invalid container port %s for service %s", port, name)
