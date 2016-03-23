@@ -203,6 +203,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
     version := "v1"
     // create new client
     client := client.NewOrDie(&client.Config{Host: server, Version: version})
+
     for name, service := range p.Configs {
         rc := &api.ReplicationController{
             TypeMeta: unversioned.TypeMeta{
@@ -378,6 +379,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
         default:
             logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
+        }
+
+        // Configure the container privileged mode
+        if service.Privileged == true {
+          securitycontexts := &api.SecurityContext{
+            Privileged: &service.Privileged,
+          }
+          rc.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
         }
 
         // convert datarc to json / yaml
