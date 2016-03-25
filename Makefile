@@ -55,7 +55,7 @@ build: bundles
 bundles:
 	mkdir bundles
 
-clean: 
+clean:
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh clean
 
 help: ## this help
