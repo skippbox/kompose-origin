@@ -1,0 +1,10 @@
+machine:
+  services:
+    - docker
+
+  environment:
+    BASE_DIR: src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+
+test:
+  override:
+    - make binary
