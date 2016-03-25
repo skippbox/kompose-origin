@@ -10,12 +10,14 @@ LIBCOMPOSE_ENVS := \
 
 # (default to no bind mount if DOCKER_HOST is set)
 BIND_DIR := $(if $(DOCKER_HOST),,bundles)
+# BIND_DIR := bundles
+
 LIBCOMPOSE_MOUNT := $(if $(BIND_DIR),-v "$(CURDIR)/$(BIND_DIR):/go/src/github.com/docker/libcompose/$(BIND_DIR)")
 
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 LIBCOMPOSE_IMAGE := libcompose-dev$(if $(GIT_BRANCH),:$(GIT_BRANCH))
 
-DOCKER_RUN_LIBCOMPOSE := docker run --rm -it --privileged $(LIBCOMPOSE_ENVS) $(LIBCOMPOSE_MOUNT) "$(LIBCOMPOSE_IMAGE)"
+DOCKER_RUN_LIBCOMPOSE := docker run -it --privileged $(LIBCOMPOSE_ENVS) $(LIBCOMPOSE_MOUNT) "$(LIBCOMPOSE_IMAGE)"
 
 default: binary
 
@@ -65,6 +67,5 @@ build: bundles
 bundles:
 	mkdir bundles
 
-clean: 
+clean:
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh clean
-
