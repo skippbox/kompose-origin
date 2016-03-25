@@ -1,7 +1,7 @@
 # Kubernetes compose (Kompose)
 ===============================
 
-[![Circle CI](https://circleci.com/gh/skippbox/kompose/tree/kcompose.svg?style=svg)](https://circleci.com/gh/skippbox/kompose/tree/kcompose)
+[![Circle CI](https://circleci.com/gh/skippbox/kompose/tree/kcompose.svg?style=shield)](https://circleci.com/gh/skippbox/kompose/tree/kcompose)
 
 `kompose` is a fork of [libcompose](https://github.com/docker/libcompose) which is a Go library for [Docker Compose](http://docs.docker.com/compose).
 `kompose` adds [Kubernetes](http://kubernetes.io) support. It takes a Docker Compose file and translates it into Kubernetes objects, it then submits those objects to a Kubernetes endpoint.
