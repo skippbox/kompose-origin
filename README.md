@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/skippbox/kompose/tree/kcompose.svg?style=svg)](https://circleci.com/gh/skippbox/kompose/tree/kcompose)
+
 # kompose
 
 `kompose` is a fork of [libcompose](https://github.com/docker/libcompose) which is a Go library for [Docker Compose](http://docs.docker.com/compose).
