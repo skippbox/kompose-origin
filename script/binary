@@ -12,6 +12,6 @@ GITCOMMIT=$(git rev-parse --short HEAD)
 
 # Build binaries
 gox "${OS_PLATFORM_ARG[@]}" "${OS_ARCH_ARG[@]}" \
-    -output="bundles/kcompose_{{.OS}}-{{.Arch}}" \
+    -output="bundles/kcompose_{{.OS}}-{{.Arch}}/kompose" \
     -ldflags="-w -X github.com/docker/libcompose/version.GITCOMMIT=${GITCOMMIT} -X github.com/docker/libcompose/version.BUILDTIME=${BUILDTIME}" \
     ./cli/main
