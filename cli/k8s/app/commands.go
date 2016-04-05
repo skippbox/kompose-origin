@@ -25,6 +25,7 @@ import (
     "github.com/codegangsta/cli"
 
     "github.com/docker/libcompose/project"
+    //project "github.com/skippbox/kompose/project"
 
     "encoding/json"
     "io/ioutil"
@@ -212,14 +213,14 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             },
             ObjectMeta: api.ObjectMeta{
                 Name:   name,
-                Labels: map[string]string{"service": name},
+                //Labels: map[string]string{"service": name},
             },
             Spec: api.ReplicationControllerSpec{
                 Replicas: 1,
                 Selector: map[string]string{"service": name},
                 Template: &api.PodTemplateSpec{
                     ObjectMeta: api.ObjectMeta{
-                        Labels: map[string]string{"service": name},
+                        //Labels: map[string]string{"service": name},
                     },
                     Spec: api.PodSpec{
                         Containers: []api.Container{
@@ -239,7 +240,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             },
             ObjectMeta: api.ObjectMeta{
                 Name:   name,
-                Labels: map[string]string{"service": name},
+                //Labels: map[string]string{"service": name},
             },
             Spec: api.ServiceSpec{
                 Selector: map[string]string{"service": name},
@@ -311,6 +312,60 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         rc.Spec.Template.Spec.Containers[0].Env = envs
 
+        // Configure the container command.
+        var cmds []string
+        for _, cmd := range service.Command.Slice() {
+            cmds = append(cmds, cmd)
+        }
+        rc.Spec.Template.Spec.Containers[0].Command = cmds
+
+        // Configure the container working dir.
+        rc.Spec.Template.Spec.Containers[0].WorkingDir = service.WorkingDir
+
+        // Configure the container volumes.
+        var volumesMount []api.VolumeMount
+        var volumes []api.Volume
+        for _, volume := range service.Volumes {
+            var character string = ":"
+            if strings.Contains(volume, character) {
+                hostDir := volume[0:strings.Index(volume, character)]
+                hostDir = strings.TrimSpace(hostDir)
+                containerDir := volume[strings.Index(volume, character) + 1: len(volume)]
+                containerDir = strings.TrimSpace(containerDir)
+
+                // check if ro/rw mode is defined
+                var readonly bool = true
+                if strings.Index(volume, character) != strings.LastIndex(volume, character) {
+                    mode := volume[strings.LastIndex(volume, character) + 1: len(volume)]
+                    if strings.Compare(mode, "rw") == 0 {
+                        readonly = false
+                    }
+                    containerDir = containerDir[0:strings.Index(containerDir, character)]
+                }
+
+                //use volume name in format of hostDir_containerDir
+                volumeNames := []string{hostDir, containerDir}
+                volumeName := strings.Join(volumeNames, "_")
+
+                volumesMount = append(volumesMount, api.VolumeMount{Name: volumeName, ReadOnly: readonly, MountPath: containerDir})
+                var p *api.HostPathVolumeSource
+                p.Path = hostDir
+                volumeSource := api.VolumeSource{HostPath: p}
+                volumes = append(volumes, api.Volume{Name: volumeName, VolumeSource: volumeSource})
+            }
+        }
+
+        rc.Spec.Template.Spec.Containers[0].VolumeMounts = volumesMount
+        rc.Spec.Template.Spec.Volumes = volumes
+
+        // Configure the container privileged mode
+        if service.Privileged == true {
+            securitycontexts := &api.SecurityContext{
+                Privileged: &service.Privileged,
+            }
+            rc.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
+        }
+
         // Configure the container ports.
         var ports []api.ContainerPort
         for _, port := range service.Ports {
@@ -369,6 +424,16 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         }
         sc.Spec.Ports = servicePorts
 
+        // Configure label
+        labels := map[string]string{"service": name}
+        for key, value := range service.Labels.MapParts() {
+            labels[key] = value
+        }
+        rc.Spec.Template.Labels = labels
+        rc.ObjectMeta.Labels = labels
+        sc.ObjectMeta.Labels = labels
+
+
         // Configure the container restart policy.
         switch service.Restart {
         case "", "always":
@@ -379,14 +444,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
         default:
             logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
-        }
-
-        // Configure the container privileged mode
-        if service.Privileged == true {
-          securitycontexts := &api.SecurityContext{
-            Privileged: &service.Privileged,
-          }
-          rc.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
         }
 
         // convert datarc to json / yaml
