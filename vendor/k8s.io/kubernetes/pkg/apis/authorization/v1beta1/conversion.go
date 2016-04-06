@@ -1,4 +1,6 @@
 /*
+Copyright 2015 The Kubernetes Authors All rights reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package candiedyaml
+package v1beta1
 
-const (
-	yaml_VERSION_MAJOR  = 0
-	yaml_VERSION_MINOR  = 1
-	yaml_VERSION_PATCH  = 6
-	yaml_VERSION_STRING = "0.1.6"
+import (
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
-func init() {
-	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
-		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
+func addConversionFuncs(scheme *runtime.Scheme) {
+	// Add non-generated conversion functions
+	err := scheme.AddConversionFuncs()
+	if err != nil {
+		// If one of the conversion functions is malformed, detect it immediately.
+		panic(err)
 	}
 }

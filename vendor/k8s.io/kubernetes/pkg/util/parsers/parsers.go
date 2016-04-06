@@ -1,4 +1,6 @@
 /*
+Copyright 2015 The Kubernetes Authors All rights reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,17 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package candiedyaml
+package parsers
 
-const (
-	yaml_VERSION_MAJOR  = 0
-	yaml_VERSION_MINOR  = 1
-	yaml_VERSION_PATCH  = 6
-	yaml_VERSION_STRING = "0.1.6"
+import (
+	"github.com/docker/docker/pkg/parsers"
 )
 
-func init() {
-	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
-		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
+const (
+	defaultImageTag = "latest"
+)
+
+// parseImageName parses a docker image string into two parts: repo and tag.
+// If tag is empty, return the defaultImageTag.
+func ParseImageName(image string) (string, string) {
+	repoToPull, tag := parsers.ParseRepositoryTag(image)
+	// If no tag was specified, use the default "latest".
+	if len(tag) == 0 {
+		tag = defaultImageTag
 	}
+	return repoToPull, tag
 }

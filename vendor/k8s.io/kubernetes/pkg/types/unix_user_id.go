@@ -1,4 +1,6 @@
 /*
+Copyright 2016 The Kubernetes Authors All rights reserved.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,17 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package candiedyaml
+package types
 
-const (
-	yaml_VERSION_MAJOR  = 0
-	yaml_VERSION_MINOR  = 1
-	yaml_VERSION_PATCH  = 6
-	yaml_VERSION_STRING = "0.1.6"
-)
+// int64 is used as a safe bet against wrap-around (uid's are general
+// int32) and to support uid_t -1, and -2.
 
-func init() {
-	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
-		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
-	}
-}
+type UnixUserID int64
+type UnixGroupID int64
