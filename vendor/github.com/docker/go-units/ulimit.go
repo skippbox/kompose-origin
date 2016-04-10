@@ -73,6 +73,7 @@ func ParseUlimit(val string) (*Ulimit, error) {
 		return nil, fmt.Errorf("invalid ulimit type: %s", parts[0])
 	}
 
+<<<<<<< ef672cab621d6a834cfc114b89264a8e09769a72
 	limitVals := strings.SplitN(parts[1], ":", 2)
 	if len(limitVals) > 2 {
 		return nil, fmt.Errorf("too many limit value arguments - %s, can only have up to two, `soft[:hard]`", parts[1])
@@ -92,6 +93,36 @@ func ParseUlimit(val string) (*Ulimit, error) {
 	}
 
 	return &Ulimit{Name: parts[0], Soft: soft, Hard: hard}, nil
+=======
+	var (
+		soft int64
+		hard = &soft // default to soft in case no hard was set
+		temp int64
+		err  error
+	)
+	switch limitVals := strings.Split(parts[1], ":"); len(limitVals) {
+	case 2:
+		temp, err = strconv.ParseInt(limitVals[1], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		hard = &temp
+		fallthrough
+	case 1:
+		soft, err = strconv.ParseInt(limitVals[0], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("too many limit value arguments - %s, can only have up to two, `soft[:hard]`", parts[1])
+	}
+
+	if soft > *hard {
+		return nil, fmt.Errorf("ulimit soft limit must be less than or equal to hard limit: %d > %d", soft, *hard)
+	}
+
+	return &Ulimit{Name: parts[0], Soft: soft, Hard: *hard}, nil
+>>>>>>> update vendoring for k8s 1.2 dependencies
 }
 
 // GetRlimit returns the RLimit corresponding to Ulimit.
