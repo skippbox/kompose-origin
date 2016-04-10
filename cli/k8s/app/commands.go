@@ -25,16 +25,17 @@ import (
     "github.com/codegangsta/cli"
 
     "github.com/docker/libcompose/project"
-    //project "github.com/skippbox/kompose/project"
+//project "github.com/skippbox/kompose/project"
 
     "encoding/json"
     "io/ioutil"
 
     "k8s.io/kubernetes/pkg/api"
     "k8s.io/kubernetes/pkg/apis/extensions"
-    "k8s.io/kubernetes/pkg/util"
+    "k8s.io/kubernetes/pkg/util/intstr"
     "k8s.io/kubernetes/pkg/api/unversioned"
     client "k8s.io/kubernetes/pkg/client/unversioned"
+    restclient "k8s.io/kubernetes/pkg/client/restclient"
 
     "github.com/ghodss/yaml"
 )
@@ -53,10 +54,11 @@ func ProjectKuberConfig(p *project.Project, c *cli.Context) {
 
 func ProjectKuberPS(p *project.Project, c *cli.Context) {
     server := getK8sServer("")
-    version := "v1"
+    //version := "v1"
 
-    client := client.NewOrDie(&client.Config{Host: server, Version: version})
-	if c.BoolT("svc") {
+    //client := client.NewOrDie(&restclient.Config{Host: server, Version: version})
+    client := client.NewOrDie(&restclient.Config{Host: server})
+    if c.BoolT("svc") {
         fmt.Printf("%-20s%-20s%-20s%-20s\n","Name", "Cluster IP", "Ports", "Selectors")
         for name := range p.Configs {
             var ports string
@@ -84,9 +86,9 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
             }
 
         }
-	}
+    }
 
-	if c.BoolT("rc") {
+    if c.BoolT("rc") {
         fmt.Printf("%-15s%-15s%-30s%-10s%-20s\n", "Name", "Containers", "Images",
             "Replicas", "Selectors")
         for name := range p.Configs {
@@ -118,19 +120,20 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
                     images, rc.Spec.Replicas, selectors)
             }
         }
-	}
+    }
 
 }
 
 func ProjectKuberDelete(p *project.Project, c *cli.Context) {
     server := getK8sServer("")
-    version := "v1"
-    client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    //version := "v1"
+    //client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    client := client.NewOrDie(&restclient.Config{Host: server})
 
     for name := range p.Configs {
-		if len(c.String("name")) > 0 && name != c.String("name") {
-			continue
-		}
+        if len(c.String("name")) > 0 && name != c.String("name") {
+            continue
+        }
 
         if c.BoolT("svc") {
             err := client.Services(api.NamespaceDefault).Delete(name)
@@ -148,8 +151,9 @@ func ProjectKuberDelete(p *project.Project, c *cli.Context) {
 
 func ProjectKuberScale(p *project.Project, c *cli.Context) {
     server := getK8sServer("")
-    version := "v1"
-    client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    //version := "v1"
+    //client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    client := client.NewOrDie(&restclient.Config{Host: server})
 
     if c.Int("scale") <= 0 {
         logrus.Fatalf("Scale must be defined and a positive number")
@@ -195,15 +199,16 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
     }
 
     if c.BoolT("yaml") {
-      generateYaml = true
+        generateYaml = true
     }
 
     var mServices map[string]api.Service = make(map[string]api.Service)
     var serviceLinks []string
 
-    version := "v1"
+    //version := "v1"
     // create new client
-    client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    //client := client.NewOrDie(&client.Config{Host: server, Version: version})
+    client := client.NewOrDie(&restclient.Config{Host: server})
 
     for name, service := range p.Configs {
         rc := &api.ReplicationController{
@@ -257,9 +262,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             },
             Spec: extensions.DeploymentSpec {
                 Replicas: 1,
-                Selector: map[string]string{"service": name},
-                UniqueLabelKey: p.Name,
-                Template: &api.PodTemplateSpec {
+                //Selector: map[string]string{"service": name},
+                Selector: &unversioned.LabelSelector{
+                    MatchLabels: map[string]string{"service": name},
+                },
+                //UniqueLabelKey: p.Name,
+                Template: api.PodTemplateSpec {
                     ObjectMeta: api.ObjectMeta {
                         Labels: map[string]string {"service": name},
                     },
@@ -274,6 +282,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                 },
             },
         }
+
+        ////Configure dc.Spec.Selector
+        //selector := &unversioned.LabelSelector{
+        //    MatchLabels: map[string]string{"service": name},
+        //}
+        //dc.Spec.Selector = selector
+
         ds := &extensions.DaemonSet{
             TypeMeta: unversioned.TypeMeta{
                 Kind: "DaemonSet",
@@ -283,7 +298,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                 Name: name,
             },
             Spec: extensions.DaemonSetSpec{
-                Template: &api.PodTemplateSpec{
+                Template: api.PodTemplateSpec{
                     ObjectMeta: api.ObjectMeta{
                         Name: name,
                     },
@@ -309,26 +324,26 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                 name = strings.TrimSpace(name)
                 value = strings.TrimSpace(value)
                 envs = append(envs, api.EnvVar{
-                                               Name: name,
-                                               Value: value,
-                                              })
+                    Name: name,
+                    Value: value,
+                })
             } else {
                 character = ":"
                 if strings.Contains(env, character) {
-                  var charQuote string = "'"
-                  value := env[strings.Index(env, character) + 1: len(env)]
-                  name := env[0:strings.Index(env, character)]
-                  name = strings.TrimSpace(name)
-                  value = strings.TrimSpace(value)
-                  if strings.Contains(value, charQuote) {
-                    value = strings.Trim(value, "'")
-                  }
-                  envs = append(envs, api.EnvVar{
-                                                 Name: name,
-                                                 Value: value,
-                                                })
+                    var charQuote string = "'"
+                    value := env[strings.Index(env, character) + 1: len(env)]
+                    name := env[0:strings.Index(env, character)]
+                    name = strings.TrimSpace(name)
+                    value = strings.TrimSpace(value)
+                    if strings.Contains(value, charQuote) {
+                        value = strings.Trim(value, "'")
+                    }
+                    envs = append(envs, api.EnvVar{
+                        Name: name,
+                        Value: value,
+                    })
                 } else {
-                  logrus.Fatalf("Invalid container env %s for service %s", env, name)
+                    logrus.Fatalf("Invalid container env %s for service %s", env, name)
                 }
             }
         }
@@ -447,18 +462,18 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                 if err1 != nil {
                     logrus.Fatalf("Invalid container port %s for service %s", port, name)
                 }
-                var targetPort util.IntOrString
+                var targetPort intstr.IntOrString
                 targetPort.StrVal = targetPortNumber
-                targetPort.IntVal = targetPortNumberInt
+                targetPort.IntVal = int32(targetPortNumberInt)
                 servicePorts = append(servicePorts, api.ServicePort{Port: portNumberInt, Name: portNumber, Protocol: "TCP", TargetPort: targetPort})
             } else {
                 portNumber, err := strconv.Atoi(port)
                 if err != nil {
                     logrus.Fatalf("Invalid container port %s for service %s", port, name)
                 }
-                var targetPort util.IntOrString
+                var targetPort intstr.IntOrString
                 targetPort.StrVal = strconv.Itoa(portNumber)
-                targetPort.IntVal = portNumber
+                targetPort.IntVal = int32(portNumber)
                 servicePorts = append(servicePorts, api.ServicePort{Port: portNumber, Name: strconv.Itoa(portNumber), Protocol: "TCP", TargetPort: targetPort})
             }
         }
@@ -501,7 +516,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         // convert datarc to json / yaml
         datarc, err := json.MarshalIndent(rc, "", "  ")
         if generateYaml == true {
-          datarc, err = yaml.Marshal(rc)
+            datarc, err = yaml.Marshal(rc)
         }
 
         if err != nil {
@@ -512,7 +527,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         // convert datasc to json / yaml
         datasc, er := json.MarshalIndent(sc, "", "  ")
         if generateYaml == true {
-          datasc, er = yaml.Marshal(sc)
+            datasc, er = yaml.Marshal(sc)
         }
 
         if er != nil {
@@ -524,7 +539,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         // convert datadc to json / yaml
         datadc, err := json.MarshalIndent(dc, "", "  ")
         if generateYaml == true {
-          datadc, err = yaml.Marshal(dc)
+            datadc, err = yaml.Marshal(dc)
         }
 
         if err != nil {
@@ -575,7 +590,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         fileRC := fmt.Sprintf("%s-rc.json", name)
         if generateYaml == true {
-          fileRC = fmt.Sprintf("%s-rc.yaml", name)
+            fileRC = fmt.Sprintf("%s-rc.yaml", name)
         }
         if err := ioutil.WriteFile(fileRC, []byte(datarc), 0644); err != nil {
             logrus.Fatalf("Failed to write replication controller: %v", err)
@@ -585,7 +600,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         if c.BoolT("deployment") {
             fileDC := fmt.Sprintf("%s-deployment.json", name)
             if generateYaml == true {
-              fileDC = fmt.Sprintf("%s-deployment.yaml", name)
+                fileDC = fmt.Sprintf("%s-deployment.yaml", name)
             }
             if err := ioutil.WriteFile(fileDC, []byte(datadc), 0644); err != nil {
                 logrus.Fatalf("Failed to write deployment container: %v", err)
@@ -605,28 +620,28 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         for k, v := range mServices {
             for i :=0; i < len(serviceLinks); i++ {
                 //if serviceLinks[i] == k {
-                    // call create SVC api
-                    if createInstance == true {
-                        scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
-                        if err != nil {
-                            fmt.Println(err)
-                        }
-                        logrus.Debugf("%s\n", scCreated)
+                // call create SVC api
+                if createInstance == true {
+                    scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
+                    if err != nil {
+                        fmt.Println(err)
                     }
+                    logrus.Debugf("%s\n", scCreated)
+                }
 
-                    datasvc, er := json.MarshalIndent(v, "", "  ")
-                    if er != nil {
-                        logrus.Fatalf("Failed to marshal the service controller: %v", er)
-                    }
+                datasvc, er := json.MarshalIndent(v, "", "  ")
+                if er != nil {
+                    logrus.Fatalf("Failed to marshal the service controller: %v", er)
+                }
 
-                    fileSVC := fmt.Sprintf("%s-svc.json", k)
-                    if generateYaml == true {
-                      fileSVC = fmt.Sprintf("%s-svc.yaml", k)
-                    }
+                fileSVC := fmt.Sprintf("%s-svc.json", k)
+                if generateYaml == true {
+                    fileSVC = fmt.Sprintf("%s-svc.yaml", k)
+                }
 
-                    if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
-                        logrus.Fatalf("Failed to write service controller: %v", err)
-                    }
+                if err := ioutil.WriteFile(fileSVC, []byte(datasvc), 0644); err != nil {
+                    logrus.Fatalf("Failed to write service controller: %v", err)
+                }
                 //}
             }
         }
