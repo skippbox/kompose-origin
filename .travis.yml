@@ -1,0 +1,14 @@
+sudo: required
+
+language: go
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+    - kcompose
+
+script:
+- make binary
