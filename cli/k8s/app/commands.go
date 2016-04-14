@@ -188,8 +188,8 @@ func ProjectKuberScale(p *project.Project, c *cli.Context) {
     }
 }
 
-func ProjectKuber(p *project.Project, c *cli.Context) {
-    createInstance := true
+func ProjectKuberConvert(p *project.Project, c *cli.Context) {
+    //createInstance := true
     generateYaml := false
     composeFile := c.String("file")
 
@@ -202,11 +202,11 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         logrus.Fatalf("Failed to parse the compose project from %s: %v", composeFile, err)
     }
 
-    server := getK8sServer("")
+    //server := getK8sServer("")
 
-    if c.BoolT("deployment") || c.BoolT("chart") || c.BoolT("daemonset") || c.BoolT("replicaset") {
-        createInstance = false
-    }
+    //if c.BoolT("deployment") || c.BoolT("chart") || c.BoolT("daemonset") || c.BoolT("replicaset") {
+    //    createInstance = false
+    //}
 
     if c.BoolT("yaml") {
         generateYaml = true
@@ -218,7 +218,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
     //version := "v1"
     // create new client
     //client := client.NewOrDie(&client.Config{Host: server, Version: version})
-    client := client.NewOrDie(&restclient.Config{Host: server})
+    //client := client.NewOrDie(&restclient.Config{Host: server})
 
     for name, service := range p.Configs {
         rc := &api.ReplicationController{
@@ -620,13 +620,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         }
 
         // call create RC api
-        if createInstance == true {
-            rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
-            if err != nil {
-                fmt.Println(err)
-            }
-            logrus.Debugf("%s\n", rcCreated)
-        }
+        //if createInstance == true {
+        //    rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
+        //    if err != nil {
+        //        fmt.Println(err)
+        //    }
+        //    logrus.Debugf("%s\n", rcCreated)
+        //}
 
         fileRC := fmt.Sprintf("%s-rc.json", name)
         if generateYaml == true {
@@ -673,13 +673,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             for i :=0; i < len(serviceLinks); i++ {
                 //if serviceLinks[i] == k {
                 // call create SVC api
-                if createInstance == true {
-                    scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
-                    if err != nil {
-                        fmt.Println(err)
-                    }
-                    logrus.Debugf("%s\n", scCreated)
-                }
+                //if createInstance == true {
+                //    scCreated, err := client.Services(api.NamespaceDefault).Create(&v)
+                //    if err != nil {
+                //        fmt.Println(err)
+                //    }
+                //    logrus.Debugf("%s\n", scCreated)
+                //}
 
 
                 // convert datasvc to json / yaml
@@ -715,4 +715,81 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             }
         }
     }
+}
+
+func ProjectKuberUp(p *project.Project, c *cli.Context) {
+    server := getK8sServer("")
+    client := client.NewOrDie(&restclient.Config{Host: server})
+
+    files, err := ioutil.ReadDir(".")
+    if err != nil {
+      logrus.Fatalf("Failed to load rc, svc manifest files: %s\n", err)
+    }
+
+    // submit svc first
+    sc := &api.Service{}
+    for _, file := range files {
+      // fmt.Println(file.Name())
+      if strings.Contains(file.Name(), "svc") {
+        datasvc, err := ioutil.ReadFile(file.Name())
+
+        if err != nil {
+          logrus.Fatalf("Failed to load %s: %s\n", file.Name(), err)
+        }
+
+        if strings.Contains(file.Name(), "json") {
+          err := json.Unmarshal(datasvc, &sc)
+          if err != nil {
+            logrus.Fatalf("Failed to unmarshal file %s to svc object: %s\n", file.Name(), err)
+          }
+        }
+        if strings.Contains(file.Name(), "yaml") {
+          err := yaml.Unmarshal(datasvc, &sc)
+          if err != nil {
+            logrus.Fatalf("Failed to unmarshal file %s to svc object: %s\n", file.Name(), err)
+          }
+        }
+        // submit sc to k8s
+        // fmt.Println(sc)
+        scCreated, err := client.Services(api.NamespaceDefault).Create(sc)
+        if err != nil {
+            fmt.Println(err)
+        }
+        logrus.Debugf("%s\n", scCreated)
+      }
+    }
+
+    // then submit rc
+    rc := &api.ReplicationController{}
+    for _, file := range files {
+      // fmt.Println(file.Name())
+      if strings.Contains(file.Name(), "rc") {
+        datarc, err := ioutil.ReadFile(file.Name())
+
+        if err != nil {
+          logrus.Fatalf("Failed to load %s: %s\n", file.Name(), err)
+        }
+
+        if strings.Contains(file.Name(), "json") {
+          err := json.Unmarshal(datarc, &rc)
+          if err != nil {
+            logrus.Fatalf("Failed to unmarshal file %s to rc object: %s\n", file.Name(), err)
+          }
+        }
+        if strings.Contains(file.Name(), "yaml") {
+          err := yaml.Unmarshal(datarc, &rc)
+          if err != nil {
+            logrus.Fatalf("Failed to unmarshal file %s to rc object: %s\n", file.Name(), err)
+          }
+        }
+        // submit rc to k8s
+        // fmt.Println(rc)
+        rcCreated, err := client.ReplicationControllers(api.NamespaceDefault).Create(rc)
+        if err != nil {
+            fmt.Println(err)
+        }
+        logrus.Debugf("%s\n", rcCreated)
+      }
+    }
+
 }
