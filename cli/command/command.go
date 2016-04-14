@@ -239,6 +239,10 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Usage:	"Generate a daemonset resource file",
 					},
 					cli.BoolFlag{
+						Name:	"replicaset,rs",
+						Usage:	"Generate a replicaset resource file",
+					},
+					cli.BoolFlag{
 						Name:	"chart,c",
 						Usage:	"Create a chart deployment",
 					},

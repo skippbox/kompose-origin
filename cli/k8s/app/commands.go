@@ -20,12 +20,13 @@ import (
     "fmt"
     "strconv"
     "strings"
+    "math/rand"
 
     "github.com/Sirupsen/logrus"
     "github.com/codegangsta/cli"
 
     "github.com/docker/libcompose/project"
-//project "github.com/skippbox/kompose/project"
+    //project "github.com/skippbox/kompose/project"
 
     "encoding/json"
     "io/ioutil"
@@ -40,8 +41,17 @@ import (
     "github.com/ghodss/yaml"
 )
 
-/* Kubernetes specific configuration */
+const letterBytes = "abcdefghijklmnopqrstuvwxyz0123456789"
 
+func RandStringBytes(n int) string {
+    b := make([]byte, n)
+    for i := range b {
+        b[i] = letterBytes[rand.Intn(len(letterBytes))]
+    }
+    return string(b)
+}
+
+/* Kubernetes specific configuration */
 func ProjectKuberConfig(p *project.Project, c *cli.Context) {
     url := c.String("host")
 
@@ -194,7 +204,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
     server := getK8sServer("")
 
-    if c.BoolT("deployment") || c.BoolT("chart") || c.BoolT("daemonset") {
+    if c.BoolT("deployment") || c.BoolT("chart") || c.BoolT("daemonset") || c.BoolT("replicaset") {
         createInstance = false
     }
 
@@ -262,7 +272,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             },
             Spec: extensions.DeploymentSpec {
                 Replicas: 1,
-                //Selector: map[string]string{"service": name},
                 Selector: &unversioned.LabelSelector{
                     MatchLabels: map[string]string{"service": name},
                 },
@@ -282,13 +291,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                 },
             },
         }
-
-        ////Configure dc.Spec.Selector
-        //selector := &unversioned.LabelSelector{
-        //    MatchLabels: map[string]string{"service": name},
-        //}
-        //dc.Spec.Selector = selector
-
         ds := &extensions.DaemonSet{
             TypeMeta: unversioned.TypeMeta{
                 Kind: "DaemonSet",
@@ -306,6 +308,34 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                         Containers: []api.Container {
                             {
                                 Name:  name,
+                                Image: service.Image,
+                            },
+                        },
+                    },
+                },
+            },
+        }
+        rs := &extensions.ReplicaSet{
+            TypeMeta: unversioned.TypeMeta{
+                Kind: "ReplicaSet",
+                APIVersion: "extensions/v1beta1",
+            },
+            ObjectMeta: api.ObjectMeta{
+                Name: name,
+            },
+            Spec: extensions.ReplicaSetSpec{
+                Replicas: 1,
+                Selector: &unversioned.LabelSelector{
+                    MatchLabels: map[string]string{"service": name},
+                },
+                Template: api.PodTemplateSpec{
+                    ObjectMeta: api.ObjectMeta{
+
+                    },
+                    Spec: api.PodSpec{
+                        Containers: []api.Container{
+                            {
+                                Name: name,
                                 Image: service.Image,
                             },
                         },
@@ -351,6 +381,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         rc.Spec.Template.Spec.Containers[0].Env = envs
         dc.Spec.Template.Spec.Containers[0].Env = envs
         ds.Spec.Template.Spec.Containers[0].Env = envs
+        rs.Spec.Template.Spec.Containers[0].Env = envs
 
         // Configure the container command.
         var cmds []string
@@ -360,11 +391,13 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         rc.Spec.Template.Spec.Containers[0].Command = cmds
         dc.Spec.Template.Spec.Containers[0].Command = cmds
         ds.Spec.Template.Spec.Containers[0].Command = cmds
+        rs.Spec.Template.Spec.Containers[0].Command = cmds
 
         // Configure the container working dir.
         rc.Spec.Template.Spec.Containers[0].WorkingDir = service.WorkingDir
         dc.Spec.Template.Spec.Containers[0].WorkingDir = service.WorkingDir
         ds.Spec.Template.Spec.Containers[0].WorkingDir = service.WorkingDir
+        rs.Spec.Template.Spec.Containers[0].WorkingDir = service.WorkingDir
 
         // Configure the container volumes.
         var volumesMount []api.VolumeMount
@@ -387,9 +420,8 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                     containerDir = containerDir[0:strings.Index(containerDir, character)]
                 }
 
-                //use volume name in format of hostDir_containerDir
-                volumeNames := []string{hostDir, containerDir}
-                volumeName := strings.Join(volumeNames, "_")
+                // volumeName = random string of 20 chars
+                volumeName := RandStringBytes(20)
 
                 volumesMount = append(volumesMount, api.VolumeMount{Name: volumeName, ReadOnly: readonly, MountPath: containerDir})
                 p := &api.HostPathVolumeSource {
@@ -404,10 +436,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         rc.Spec.Template.Spec.Containers[0].VolumeMounts = volumesMount
         dc.Spec.Template.Spec.Containers[0].VolumeMounts = volumesMount
         ds.Spec.Template.Spec.Containers[0].VolumeMounts = volumesMount
+        rs.Spec.Template.Spec.Containers[0].VolumeMounts = volumesMount
 
         rc.Spec.Template.Spec.Volumes = volumes
         dc.Spec.Template.Spec.Volumes = volumes
         ds.Spec.Template.Spec.Volumes = volumes
+        rs.Spec.Template.Spec.Volumes = volumes
 
         // Configure the container privileged mode
         if service.Privileged == true {
@@ -417,6 +451,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             rc.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
             dc.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
             ds.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
+            rs.Spec.Template.Spec.Containers[0].SecurityContext = securitycontexts
         }
 
         // Configure the container ports.
@@ -444,6 +479,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         rc.Spec.Template.Spec.Containers[0].Ports = ports
         dc.Spec.Template.Spec.Containers[0].Ports = ports
         ds.Spec.Template.Spec.Containers[0].Ports = ports
+        rs.Spec.Template.Spec.Containers[0].Ports = ports
 
         // Configure the service ports.
         var servicePorts []api.ServicePort
@@ -487,10 +523,12 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
         rc.Spec.Template.ObjectMeta.Labels = labels
         dc.Spec.Template.ObjectMeta.Labels = labels
         ds.Spec.Template.ObjectMeta.Labels = labels
+        rs.Spec.Template.ObjectMeta.Labels = labels
 
         rc.ObjectMeta.Labels = labels
         dc.ObjectMeta.Labels = labels
         ds.ObjectMeta.Labels = labels
+        rs.ObjectMeta.Labels = labels
 
         sc.ObjectMeta.Labels = labels
 
@@ -501,14 +539,17 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyAlways
             dc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyAlways
             ds.Spec.Template.Spec.RestartPolicy = api.RestartPolicyAlways
+            rs.Spec.Template.Spec.RestartPolicy = api.RestartPolicyAlways
         case "no":
             rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyNever
             dc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyNever
             ds.Spec.Template.Spec.RestartPolicy = api.RestartPolicyNever
+            rs.Spec.Template.Spec.RestartPolicy = api.RestartPolicyNever
         case "on-failure":
             rc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
             dc.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
             ds.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
+            rs.Spec.Template.Spec.RestartPolicy = api.RestartPolicyOnFailure
         default:
             logrus.Fatalf("Unknown restart policy %s for service %s", service.Restart, name)
         }
@@ -523,18 +564,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             logrus.Fatalf("Failed to marshal the replication controller: %v", err)
         }
         logrus.Debugf("%s\n", datarc)
-
-        // convert datasc to json / yaml
-        datasc, er := json.MarshalIndent(sc, "", "  ")
-        if generateYaml == true {
-            datasc, er = yaml.Marshal(sc)
-        }
-
-        if er != nil {
-            logrus.Fatalf("Failed to marshal the service controller: %v", er)
-        }
-
-        logrus.Debugf("%s\n", datasc)
 
         // convert datadc to json / yaml
         datadc, err := json.MarshalIndent(dc, "", "  ")
@@ -560,6 +589,18 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
 
         logrus.Debugf("%s\n", datads)
 
+        //convert datars to json / yaml
+        datars, err := json.MarshalIndent(rs, "", "  ")
+        if generateYaml == true {
+            datads, err = yaml.Marshal(rs)
+        }
+
+        if err != nil {
+            logrus.Fatalf("Failed to marshal the replicaSet: %v", err)
+        }
+
+        logrus.Debugf("%s\n", datars)
+
 
         mServices[name] = *sc
 
@@ -576,7 +617,6 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                     }
                 }
             }
-
         }
 
         // call create RC api
@@ -607,6 +647,7 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             }
         }
 
+        /* Create the daemonset container */
         if c.BoolT("daemonset") {
             fileDS := fmt.Sprintf("%s-daemonset.json", name)
             if generateYaml == true {
@@ -614,6 +655,17 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
             }
             if err := ioutil.WriteFile(fileDS, []byte(datads), 0644); err != nil {
                 logrus.Fatalf("Failed to write daemonset: %v", err)
+            }
+        }
+
+        /* Create the replicaset container */
+        if c.BoolT("replicaset") {
+            fileRS := fmt.Sprintf("%s-replicaset.json", name)
+            if generateYaml == true {
+                fileRS = fmt.Sprintf("%s-replicaset.yaml", name)
+            }
+            if err := ioutil.WriteFile(fileRS, []byte(datars), 0644); err != nil {
+                logrus.Fatalf("Failed to write replicaset: %v", err)
             }
         }
 
@@ -629,10 +681,17 @@ func ProjectKuber(p *project.Project, c *cli.Context) {
                     logrus.Debugf("%s\n", scCreated)
                 }
 
+
+                // convert datasvc to json / yaml
                 datasvc, er := json.MarshalIndent(v, "", "  ")
+                if generateYaml == true {
+                    datasvc, er = yaml.Marshal(v)
+                }
                 if er != nil {
                     logrus.Fatalf("Failed to marshal the service controller: %v", er)
                 }
+
+                logrus.Debugf("%s\n", datasvc)
 
                 fileSVC := fmt.Sprintf("%s-svc.json", k)
                 if generateYaml == true {
