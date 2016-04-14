@@ -22,11 +22,8 @@ chmod +x /usr/local/bin/kompose
 
 ## Usage
 
-You need a Docker Compose file handy. There is a sample one in the `samples/` directory for testing.
+You need a Docker Compose file handy. There is a sample gitlab compose file in the `samples/` directory for testing.
 You will convert the compose file to K8s objects with `kompose k8s convert`.
-
-The conversion step also submits the objects to a kubernetes endpoint on localhost:8080.
-If you have a remote Kubernetes endpoint, simply run a proxy with `kubectl proxy --port=8080`.
 
 ```bash
 $ cd samples/
