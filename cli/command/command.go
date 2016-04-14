@@ -221,8 +221,8 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 		Subcommands: []cli.Command {
 			{
 				Name:	"convert",
-				Usage:	"Convert docker-compose.yml to Kubernetes object and submit",
-				Action: app.WithProject(factory, k8sApp.ProjectKuber),
+				Usage:	"Convert docker-compose.yml to Kubernetes objects",
+				Action: app.WithProject(factory, k8sApp.ProjectKuberConvert),
 				Flags: []cli.Flag{
 					cli.StringFlag{
 						Name:  "file,f",
@@ -251,6 +251,11 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 						Usage: "Generate resource file in yaml format",
 					},
 				},
+			},
+			{
+				Name:	"up",
+				Usage:	"Submit rc, svc objects to kubernetes",
+				Action:	app.WithProject(factory, k8sApp.ProjectKuberUp),
 			},
 			{
 				Name:	"ps",
