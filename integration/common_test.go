@@ -58,7 +58,7 @@ func Test(t *testing.T) { TestingT(t) }
 
 func init() {
 	Suite(&CliSuite{
-		command: "../bundles/libcompose-cli",
+		command: "../bundles/kompose_linux-amd64",
 	})
 }
 
@@ -86,10 +86,6 @@ func (s *CliSuite) TearDownTest(c *C) {
 		c.Assert(err, IsNil)
 	}
 }
-
-var _ = Suite(&RunSuite{
-	command: "../bundles/kompose_linux-amd64",
-})
 
 func (s *CliSuite) CreateProjectFromText(c *C, input string) string {
 	return s.ProjectFromText(c, "create", input)

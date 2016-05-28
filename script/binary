@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-go generate
-
 # Get rid of existing binaries
 rm -f kcompose*
 rm -rf Godeps/_workspace/pkg
+
+go generate
 
 BUILDTIME=$(date --rfc-3339 ns | sed -e 's/ /T/') &> /dev/null
 GITCOMMIT=$(git rev-parse --short HEAD)
