@@ -18,7 +18,6 @@ clone git github.com/flynn/go-shlex 3f9db97f856818214da2e1057f8ad84803971cff
 clone git github.com/gorilla/context 14f550f51a
 clone git github.com/gorilla/mux e444e69cbd
 clone git github.com/opencontainers/runc 2441732d6fcc0fb0a542671a4372e0c7bc99c19e
-clone git github.com/fsouza/go-dockerclient 39d9fefa6a7fd4ef5a4a02c5f566cb83b73c7293
 clone git github.com/stretchr/testify a1f97990ddc16022ec7610326dd9bce31332c116
 clone git github.com/davecgh/go-spew 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
 clone git github.com/pmezard/go-difflib d8ed2627bdf02c080bf22230dbb337003b7aba2d
@@ -59,7 +58,8 @@ clone git github.com/prometheus/client_model fa8ad6fec33561be4280a8f0514318c79d7
 clone git github.com/prometheus/common ef7a9a5fb138aa5d3a19988537606226869a0390
 clone git github.com/prometheus/procfs 490cc6eb5fa45bf8a8b7b73c8bc82a8160e8531d
 clone git github.com/spf13/pflag 08b1a584251b5b62f458943640fc8ebd4d50aaa5
-clone git speter.net/go/exp/math/dec/inf 42ca6cd68aa922bc3f32f1e056e61b65945d9ad7 https://code.google.com/p/go-decimal-inf.exp
+clone git speter.net/go/exp/math/dec/inf 42ca6cd68aa922bc3f32f1e056e61b65945d9ad7
+# clone git gopkg.in/inf.v0 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 clone git github.com/ugorji/go f4485b318aadd133842532f841dc205a8e339d74
 clone git gopkg.in/yaml.v2 d466437aa4adc35830964cffc5b5f262c63ddcb4
 clone git k8s.io/kubernetes v1.2.0 https://github.com/kubernetes/kubernetes.git

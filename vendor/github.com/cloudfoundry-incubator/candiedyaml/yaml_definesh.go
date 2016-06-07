@@ -20,9 +20,3 @@ const (
 	yaml_VERSION_PATCH  = 6
 	yaml_VERSION_STRING = "0.1.6"
 )
-
-func init() {
-	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
-		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
-	}
-}

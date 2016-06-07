@@ -334,93 +334,93 @@ func VersionCommand(factory app.ProjectFactory) cli.Command {
 
 func KuberCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{
-		Name:   "k8s",
-		Usage:  "Kubernetes specific commands",
-		Subcommands: []cli.Command {
+		Name:  "k8s",
+		Usage: "Kubernetes specific commands",
+		Subcommands: []cli.Command{
 			{
-				Name:	"convert",
-				Usage:	"Convert docker-compose.yml to Kubernetes objects",
+				Name:   "convert",
+				Usage:  "Convert docker-compose.yml to Kubernetes objects",
 				Action: app.WithProject(factory, k8sApp.ProjectKuberConvert),
 				Flags: []cli.Flag{
 					cli.StringFlag{
-						Name:  "file,f",
-						Usage: "Specify an alternate compose file (default: docker-compose.yml)",
-						Value:	"docker-compose.yml",
+						Name:   "file,f",
+						Usage:  "Specify an alternate compose file (default: docker-compose.yml)",
+						Value:  "docker-compose.yml",
 						EnvVar: "COMPOSE_FILE",
 					},
 					cli.BoolFlag{
-						Name:	"deployment,d",
-						Usage:	"Generate a deployment resource file",
+						Name:  "deployment,d",
+						Usage: "Generate a deployment resource file",
 					},
 					cli.BoolFlag{
-						Name:	"daemonset,ds",
-						Usage:	"Generate a daemonset resource file",
+						Name:  "daemonset,ds",
+						Usage: "Generate a daemonset resource file",
 					},
 					cli.BoolFlag{
-						Name:	"replicaset,rs",
-						Usage:	"Generate a replicaset resource file",
+						Name:  "replicaset,rs",
+						Usage: "Generate a replicaset resource file",
 					},
 					cli.BoolFlag{
-						Name:	"chart,c",
-						Usage:	"Create a chart deployment",
+						Name:  "chart,c",
+						Usage: "Create a chart deployment",
 					},
 					cli.BoolFlag{
-						Name: "yaml, y",
+						Name:  "yaml, y",
 						Usage: "Generate resource file in yaml format",
 					},
 				},
 			},
 			{
-				Name:	"up",
-				Usage:	"Submit rc, svc objects to kubernetes",
-				Action:	app.WithProject(factory, k8sApp.ProjectKuberUp),
+				Name:   "up",
+				Usage:  "Submit rc, svc objects to kubernetes",
+				Action: app.WithProject(factory, k8sApp.ProjectKuberUp),
 			},
 			{
-				Name:	"ps",
-				Usage:	"Get active data in the kubernetes cluster",
-				Action:	app.WithProject(factory, k8sApp.ProjectKuberPS),
-				Flags: []cli.Flag {
-					cli.BoolFlag {
-						Name:	"service,svc",
-						Usage:	"Get active services",
+				Name:   "ps",
+				Usage:  "Get active data in the kubernetes cluster",
+				Action: app.WithProject(factory, k8sApp.ProjectKuberPS),
+				Flags: []cli.Flag{
+					cli.BoolFlag{
+						Name:  "service,svc",
+						Usage: "Get active services",
 					},
-					cli.BoolFlag {
-						Name:	"replicationcontroller,rc",
-						Usage:	"Get active replication controller",
+					cli.BoolFlag{
+						Name:  "replicationcontroller,rc",
+						Usage: "Get active replication controller",
 					},
 				},
 			},
 			{
-				Name:	"delete",
-				Usage:	"Remove instantiated services/rc from kubernetes",
-				Action:	app.WithProject(factory, k8sApp.ProjectKuberDelete),
-				Flags:	[]cli.Flag {
-					cli.BoolFlag {
-						Name: "replicationcontroller,rc",
+				Name:   "delete",
+				Usage:  "Remove instantiated services/rc from kubernetes",
+				Action: app.WithProject(factory, k8sApp.ProjectKuberDelete),
+				Flags: []cli.Flag{
+					cli.BoolFlag{
+						Name:  "replicationcontroller,rc",
 						Usage: "Remove active replication controllers",
 					},
-					cli.BoolFlag {
-						Name: "service,svc",
+					cli.BoolFlag{
+						Name:  "service,svc",
 						Usage: "Remove active services",
 					},
-					cli.StringFlag {
-						Name:	"name",
-						Usage:	"Name of the object to remove",
+					cli.StringFlag{
+						Name:  "name",
+						Usage: "Name of the object to remove",
 					},
 				},
 			},
 			{
-				Name:	"scale",
-				Usage:	"Globally scale instantiated replication controllers",
-				Action:	app.WithProject(factory, k8sApp.ProjectKuberScale),
-				Flags:	[]cli.Flag {
-					cli.IntFlag {
-						Name:	"scale",
-						Usage:	"New number of replicas",
+				Name:   "scale",
+				Usage:  "Globally scale instantiated replication controllers",
+				Action: app.WithProject(factory, k8sApp.ProjectKuberScale),
+				Flags: []cli.Flag{
+					cli.IntFlag{
+						Name:  "scale",
+						Usage: "New number of replicas",
 					},
-					cli.StringFlag {
-						Name:	"replicationcontroller,rc",
-						Usage:	"A specific replication controller to scale",
+					cli.StringFlag{
+						Name:  "replicationcontroller,rc",
+						Usage: "A specific replication controller to scale",
 					},
 				},
 			},
