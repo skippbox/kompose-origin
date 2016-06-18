@@ -9,6 +9,7 @@ branches:
   only:
     - master
     - kcompose
+    - kompose-lite
 
 script:
 - make binary
