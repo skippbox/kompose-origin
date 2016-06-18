@@ -50,7 +50,8 @@ clone git github.com/prometheus/client_model fa8ad6fec33561be4280a8f0514318c79d7
 clone git github.com/prometheus/common ef7a9a5fb138aa5d3a19988537606226869a0390
 clone git github.com/prometheus/procfs 490cc6eb5fa45bf8a8b7b73c8bc82a8160e8531d
 clone git github.com/spf13/pflag 08b1a584251b5b62f458943640fc8ebd4d50aaa5
-clone git speter.net/go/exp/math/dec/inf 42ca6cd68aa922bc3f32f1e056e61b65945d9ad7 https://code.google.com/p/go-decimal-inf.exp
+#clone git speter.net/go/exp/math/dec/inf 42ca6cd68aa922bc3f32f1e056e61b65945d9ad7 https://code.google.com/p/go-decimal-inf.exp
+clone git github.com/go-inf/inf 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 clone git github.com/ugorji/go f4485b318aadd133842532f841dc205a8e339d74
 clone git gopkg.in/yaml.v2 d466437aa4adc35830964cffc5b5f262c63ddcb4
 clone git k8s.io/kubernetes v1.2.0 https://github.com/kubernetes/kubernetes.git
