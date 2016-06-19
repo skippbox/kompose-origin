@@ -310,20 +310,6 @@ func KuberCommand(factory app.ProjectFactory) cli.Command {
 	}
 }
 
-func KuberConfigCommand(factory app.ProjectFactory) cli.Command {
-	return cli.Command{
-		Name:   "kubeconfig",
-		Usage:  "Config kubernetes api server",
-		Action: app.WithProject(factory, k8sApp.ProjectKuberConfig),
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "host",
-				Usage: "Specify api server address",
-			},
-		},
-	}
-}
-
 // PauseCommand defines the libcompose pause subcommand.
 func PauseCommand(factory app.ProjectFactory) cli.Command {
 	return cli.Command{

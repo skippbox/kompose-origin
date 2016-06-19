@@ -36,7 +36,7 @@ import (
     "k8s.io/kubernetes/pkg/util/intstr"
     "k8s.io/kubernetes/pkg/api/unversioned"
     client "k8s.io/kubernetes/pkg/client/unversioned"
-    restclient "k8s.io/kubernetes/pkg/client/restclient"
+    cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 
     "github.com/ghodss/yaml"
 )
@@ -51,23 +51,16 @@ func RandStringBytes(n int) string {
     return string(b)
 }
 
-/* Kubernetes specific configuration */
-func ProjectKuberConfig(p *project.Project, c *cli.Context) {
-    url := c.String("host")
-
-    outputFilePath := ".kuberconfig"
-    wurl := []byte(url)
-    if err := ioutil.WriteFile(outputFilePath, wurl, 0644); err != nil {
-        logrus.Fatalf("Failed to write k8s api server address to %s: %v", outputFilePath, err)
-    }
-}
-
 func ProjectKuberPS(p *project.Project, c *cli.Context) {
-    server := getK8sServer("")
-    //version := "v1"
+    //server := getK8sServer("")
 
-    //client := client.NewOrDie(&restclient.Config{Host: server, Version: version})
-    client := client.NewOrDie(&restclient.Config{Host: server})
+    factory := cmdutil.NewFactory(nil)
+    clientConfig, err := factory.ClientConfig()
+    if err != nil {
+        logrus.Fatalf("Failed to get Kubernetes client config: %v", err)
+    }
+    client := client.NewOrDie(clientConfig)
+
     if c.BoolT("svc") {
         fmt.Printf("%-20s%-20s%-20s%-20s\n","Name", "Cluster IP", "Ports", "Selectors")
         for name := range p.Configs {
@@ -135,10 +128,14 @@ func ProjectKuberPS(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuberDelete(p *project.Project, c *cli.Context) {
-    server := getK8sServer("")
-    //version := "v1"
-    //client := client.NewOrDie(&client.Config{Host: server, Version: version})
-    client := client.NewOrDie(&restclient.Config{Host: server})
+    //server := getK8sServer("")
+
+    factory := cmdutil.NewFactory(nil)
+    clientConfig, err := factory.ClientConfig()
+    if err != nil {
+        logrus.Fatalf("Failed to get Kubernetes client config: %v", err)
+    }
+    client := client.NewOrDie(clientConfig)
 
     for name := range p.Configs {
         if len(c.String("name")) > 0 && name != c.String("name") {
@@ -160,10 +157,14 @@ func ProjectKuberDelete(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuberScale(p *project.Project, c *cli.Context) {
-    server := getK8sServer("")
-    //version := "v1"
-    //client := client.NewOrDie(&client.Config{Host: server, Version: version})
-    client := client.NewOrDie(&restclient.Config{Host: server})
+    //server := getK8sServer("")
+
+    factory := cmdutil.NewFactory(nil)
+    clientConfig, err := factory.ClientConfig()
+    if err != nil {
+        logrus.Fatalf("Failed to get Kubernetes client config: %v", err)
+    }
+    client := client.NewOrDie(clientConfig)
 
     if c.Int("scale") <= 0 {
         logrus.Fatalf("Scale must be defined and a positive number")
@@ -718,8 +719,14 @@ func ProjectKuberConvert(p *project.Project, c *cli.Context) {
 }
 
 func ProjectKuberUp(p *project.Project, c *cli.Context) {
-    server := getK8sServer("")
-    client := client.NewOrDie(&restclient.Config{Host: server})
+    //server := getK8sServer("")
+
+    factory := cmdutil.NewFactory(nil)
+    clientConfig, err := factory.ClientConfig()
+    if err != nil {
+        logrus.Fatalf("Failed to get Kubernetes client config: %v", err)
+    }
+    client := client.NewOrDie(clientConfig)
 
     files, err := ioutil.ReadDir(".")
     if err != nil {
@@ -793,3 +800,4 @@ func ProjectKuberUp(p *project.Project, c *cli.Context) {
     }
 
 }
+

@@ -55,5 +55,16 @@ clone git github.com/go-inf/inf 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 clone git github.com/ugorji/go f4485b318aadd133842532f841dc205a8e339d74
 clone git gopkg.in/yaml.v2 d466437aa4adc35830964cffc5b5f262c63ddcb4
 clone git k8s.io/kubernetes v1.2.0 https://github.com/kubernetes/kubernetes.git
+clone git github.com/evanphx/json-patch 7dd4489c2eb6073e5a9d7746c3274c5b5f0387df
+clone git github.com/golang/groupcache 604ed5785183e59ae2789449d89e73f3a2a77987
+clone git github.com/imdario/mergo 6633656539c1639d9d78127b7d47c622b5d7b6dc
+clone git github.com/spf13/cobra 1c44ec8d3f1552cac48999f9306da23c4d8a288b
+clone git github.com/cpuguy83/go-md2man 71acacd42f85e5e82f70a55327789582a5200a90
+clone git github.com/inconshreveable/mousetrap 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+clone git github.com/russross/blackfriday 77efab57b2f74dd3f9051c79752b2e8995c8b789
+clone git github.com/shurcooL/sanitized_anchor_name 9a8b7d4e8f347bfa230879db9d7d4e4d9e19f962
+
+mkdir -p vendor/src/speter.net/go/exp/math/dec/inf
+cp -r vendor/src/github.com/go-inf/inf/* vendor/src/speter.net/go/exp/math/dec/inf/
 
 clean && mv vendor/src/* vendor

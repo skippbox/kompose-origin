@@ -36,7 +36,6 @@ func main() {
 		command.PortCommand(factory),
 		command.KuberCommand(factory),
 		command.PsCommand(factory),
-		command.KuberConfigCommand(factory),
 		command.PauseCommand(factory),
 		command.UnpauseCommand(factory),
 	}
