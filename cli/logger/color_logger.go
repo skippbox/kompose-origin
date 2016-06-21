@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/docker/libcompose/logger"
+	"github.com/skippbox/kompose/logger"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -74,3 +74,4 @@ func (c *ColorLogger) getLogFmt() (string, string) {
 
 	return logFmt, name
 }
+

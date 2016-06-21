@@ -35,12 +35,13 @@ RUN set -ex; \
 # Set the default Docker to be run
 RUN ln -s /usr/local/bin/docker-${DOCKER_VERSION} /usr/local/bin/docker
 
-ENV COMPOSE_BINARY /go/src/github.com/docker/libcompose/libcompose-cli
+ENV COMPOSE_BINARY /go/src/github.com/skippbox/kompose/libcompose-cli
 ENV USER root
 
-WORKDIR /go/src/github.com/docker/libcompose
+WORKDIR /go/src/github.com/skippbox/kompose
 
 # Wrap all commands in the "docker-in-docker" script to allow nested containers
 ENTRYPOINT ["script/dind"]
 
-COPY . /go/src/github.com/docker/libcompose
+COPY . /go/src/github.com/skippbox/kompose
+

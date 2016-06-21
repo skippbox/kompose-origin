@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/nat"
-	"github.com/docker/libcompose/project"
-	"github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/project"
+	"github.com/skippbox/kompose/utils"
 )
 
 // Service is a project.Service implementations.
@@ -370,3 +370,4 @@ func (s *Service) specificiesHostPort() bool {
 
 	return false
 }
+

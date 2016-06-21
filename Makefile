@@ -12,7 +12,7 @@ LIBCOMPOSE_ENVS := \
 BIND_DIR := $(if $(DOCKER_HOST),,bundles)
 # BIND_DIR := bundles
 
-LIBCOMPOSE_MOUNT := $(if $(BIND_DIR),-v "$(CURDIR)/$(BIND_DIR):/go/src/github.com/docker/libcompose/$(BIND_DIR)")
+LIBCOMPOSE_MOUNT := $(if $(BIND_DIR),-v "$(CURDIR)/$(BIND_DIR):/go/src/github.com/skippbox/kompose/$(BIND_DIR)")
 
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 LIBCOMPOSE_IMAGE := libcompose-dev$(if $(GIT_BRANCH),:$(GIT_BRANCH))
@@ -69,3 +69,4 @@ bundles:
 
 clean:
 	$(DOCKER_RUN_LIBCOMPOSE) ./script/make.sh clean
+

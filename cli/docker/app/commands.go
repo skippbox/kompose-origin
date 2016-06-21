@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/docker/libcompose/docker"
+	"github.com/skippbox/kompose/docker"
 )
 
 // DockerClientFlags defines the flags that are specific to the docker client,
@@ -56,3 +56,4 @@ func Populate(context *docker.Context, c *cli.Context) {
 
 	context.ClientFactory = clientFactory
 }
+

@@ -12,7 +12,7 @@ import (
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/fileutils"
 	"github.com/docker/docker/utils"
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/project"
 	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
@@ -166,3 +166,4 @@ func CreateTar(p *project.Project, name string) (io.ReadCloser, error) {
 
 	return archive.TarWithOptions(root, options)
 }
+

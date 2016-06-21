@@ -4,10 +4,10 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	cliApp "github.com/docker/libcompose/cli/app"
-	"github.com/docker/libcompose/cli/command"
-	dockerApp "github.com/docker/libcompose/cli/docker/app"
-	"github.com/docker/libcompose/version"
+	cliApp "github.com/skippbox/kompose/cli/app"
+	"github.com/skippbox/kompose/cli/command"
+	dockerApp "github.com/skippbox/kompose/cli/docker/app"
+	"github.com/skippbox/kompose/version"
 )
 
 func main() {
@@ -20,25 +20,15 @@ func main() {
 	app.Author = "Skippbox Compose Contributors"
 	app.Email = "https://github.com/skippbox/kompose"
 	app.Before = cliApp.BeforeApp
-	app.Flags = append(command.CommonFlags(), dockerApp.DockerClientFlags()...)
+	app.Flags = append(command.CommonFlags())
 	app.Commands = []cli.Command{
-		command.BuildCommand(factory),
-		command.CreateCommand(factory),
+		command.ConvertCommand(factory),
 		command.UpCommand(factory),
-		command.StartCommand(factory),
-		command.LogsCommand(factory),
-		command.RestartCommand(factory),
-		command.StopCommand(factory),
-		command.ScaleCommand(factory),
-		command.RmCommand(factory),
-		command.PullCommand(factory),
-		command.KillCommand(factory),
-		command.PortCommand(factory),
-		command.KuberCommand(factory),
 		command.PsCommand(factory),
-		command.PauseCommand(factory),
-		command.UnpauseCommand(factory),
+		command.DeleteCommand(factory),
+		command.ScaleCommand(factory),
 	}
 
 	app.Run(os.Args)
 }
+

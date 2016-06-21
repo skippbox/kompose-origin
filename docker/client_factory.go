@@ -1,7 +1,7 @@
 package docker
 
 import (
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/project"
 	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
@@ -33,3 +33,4 @@ func NewDefaultClientFactory(opts ClientOpts) (ClientFactory, error) {
 func (s *defaultClientFactory) Create(service project.Service) *dockerclient.Client {
 	return s.client
 }
+

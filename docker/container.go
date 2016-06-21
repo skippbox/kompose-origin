@@ -11,9 +11,9 @@ import (
 	"github.com/docker/docker/pkg/parsers"
 	"github.com/docker/docker/registry"
 	"github.com/docker/docker/utils"
-	"github.com/docker/libcompose/logger"
-	"github.com/docker/libcompose/project"
-	util "github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/logger"
+	"github.com/skippbox/kompose/project"
+	util "github.com/skippbox/kompose/utils"
 	dockerclient "github.com/fsouza/go-dockerclient"
 )
 
@@ -559,3 +559,4 @@ func (c *Container) Port(port string) (string, error) {
 	}
 	return "", nil
 }
+

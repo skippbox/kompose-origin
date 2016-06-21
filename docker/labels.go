@@ -3,7 +3,7 @@ package docker
 import (
 	"encoding/json"
 
-	"github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/utils"
 )
 
 // Label represents a docker label.
@@ -73,3 +73,4 @@ func And(left, right map[string][]string) map[string][]string {
 func (f Label) Str() string {
 	return string(f)
 }
+

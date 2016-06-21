@@ -5,8 +5,8 @@ import (
 
 	"github.com/docker/docker/pkg/nat"
 	"github.com/docker/docker/runconfig"
-	"github.com/docker/libcompose/project"
-	"github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/project"
+	"github.com/skippbox/kompose/utils"
 
 	dockerclient "github.com/fsouza/go-dockerclient"
 )
@@ -175,3 +175,4 @@ func parseDevices(devices []string) ([]dockerclient.Device, error) {
 
 	return deviceMappings, nil
 }
+

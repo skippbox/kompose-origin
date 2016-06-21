@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/docker/libcompose/logger"
-	"github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/logger"
+	"github.com/skippbox/kompose/utils"
 )
 
 // ServiceState holds the state of a service.
@@ -426,3 +426,4 @@ func (p *Project) Notify(eventType EventType, serviceName string, data map[strin
 		l <- event
 	}
 }
+

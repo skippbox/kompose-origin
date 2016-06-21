@@ -8,7 +8,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/project"
 )
 
 // ProjectAction is an adapter to allow the use of ordinary functions as libcompose actions.

@@ -1,6 +1,6 @@
 package docker
 
-import "github.com/docker/libcompose/project"
+import "github.com/skippbox/kompose/project"
 
 // ServiceFactory is an implementation of project.ServiceFactory.
 type ServiceFactory struct {
@@ -11,3 +11,4 @@ type ServiceFactory struct {
 func (s *ServiceFactory) Create(project *project.Project, name string, serviceConfig *project.ServiceConfig) (project.Service, error) {
 	return NewService(name, serviceConfig, s.context), nil
 }
+

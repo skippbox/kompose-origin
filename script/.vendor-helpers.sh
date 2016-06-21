@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT=github.com/docker/libcompose
+PROJECT=github.com/skippbox/kompose
 
 # Downloads dependencies into vendor/ directory
 mkdir -p vendor/src
@@ -138,3 +138,4 @@ fix_rewritten_imports () {
        echo "$pkg: fixing rewritten imports"
        find "$target" -name \*.go -exec sed -i -e "s|\"${remove}|\"|g" {} \;
 }
+

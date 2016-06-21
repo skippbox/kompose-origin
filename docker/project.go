@@ -3,8 +3,8 @@ package docker
 import (
 	"github.com/Sirupsen/logrus"
 
-	"github.com/docker/libcompose/lookup"
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/lookup"
+	"github.com/skippbox/kompose/project"
 )
 
 // NewProject creates a Project with the specified context.
@@ -49,3 +49,4 @@ func NewProject(context *Context) (*project.Project, error) {
 
 	return p, err
 }
+

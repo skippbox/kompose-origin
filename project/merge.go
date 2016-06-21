@@ -9,7 +9,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	yaml "github.com/cloudfoundry-incubator/candiedyaml"
-	"github.com/docker/libcompose/utils"
+	"github.com/skippbox/kompose/utils"
 )
 
 var (
@@ -297,3 +297,4 @@ func asString(obj interface{}) string {
 	}
 	return ""
 }
+

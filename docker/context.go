@@ -2,7 +2,7 @@ package docker
 
 import (
 	"github.com/docker/docker/cliconfig"
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/project"
 )
 
 // Context holds context meta information about a libcompose project and docker
@@ -34,3 +34,4 @@ func (c *Context) LookupConfig() error {
 
 	return nil
 }
+

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/project"
 )
 
 // OsEnvLookup is a "bare" structure that implements the project.EnvironmentLookup interface
@@ -22,3 +22,4 @@ func (o *OsEnvLookup) Lookup(key, serviceName string, config *project.ServiceCon
 	}
 	return []string{fmt.Sprintf("%s=%s", key, ret)}
 }
+

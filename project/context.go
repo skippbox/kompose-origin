@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/libcompose/logger"
+	"github.com/skippbox/kompose/logger"
 )
 
 var projectRegexp = regexp.MustCompile("[^a-zA-Z0-9_.-]")
@@ -135,3 +135,4 @@ func (c *Context) open() error {
 	c.isOpen = true
 	return nil
 }
+

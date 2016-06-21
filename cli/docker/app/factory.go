@@ -2,10 +2,10 @@ package app
 
 import (
 	"github.com/codegangsta/cli"
-	"github.com/docker/libcompose/cli/command"
-	"github.com/docker/libcompose/cli/logger"
-	"github.com/docker/libcompose/docker"
-	"github.com/docker/libcompose/project"
+	"github.com/skippbox/kompose/cli/command"
+	"github.com/skippbox/kompose/cli/logger"
+	"github.com/skippbox/kompose/docker"
+	"github.com/skippbox/kompose/project"
 )
 
 // ProjectFactory is a struct that hold the app.ProjectFactory implementation.
@@ -21,3 +21,4 @@ func (p *ProjectFactory) Create(c *cli.Context) (*project.Project, error) {
 
 	return docker.NewProject(context)
 }
+

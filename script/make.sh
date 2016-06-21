@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-export LIBCOMPOSE_PKG='github.com/docker/libcompose'
+export LIBCOMPOSE_PKG='github.com/skippbox/kompose'
 
 # List of bundles to create when no argument is passed
 DEFAULT_BUNDLES=(
@@ -34,3 +34,4 @@ for bundle in ${bundles[@]}; do
     bundle "$bundle"
     echo
 done
+
