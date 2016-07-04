@@ -2,6 +2,8 @@
 ===============================
 [![Build Status](https://travis-ci.org/skippbox/kompose.svg?branch=kcompose)](https://travis-ci.org/skippbox/kompose)
 
+**NOTICE: We are now working in [kompose2](https://github.com/skippbox/kompose2) which is no longer being fork of [libcompose](https://github.com/docker/libcompose). Thus we are gonna delete this repo and move kompose2 over for next two weeks.**
+
 `kompose` is a fork of [libcompose](https://github.com/docker/libcompose) which is a Go library for [Docker Compose](http://docs.docker.com/compose).
 `kompose` adds [Kubernetes](http://kubernetes.io) support. It takes a Docker Compose file and translates it into Kubernetes objects, it then submits those objects to a Kubernetes endpoint.
 
