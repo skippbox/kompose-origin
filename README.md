@@ -1,4 +1,7 @@
 # Kubernetes compose (Kompose)
+
+*NOTICE*: This project is being rebooted as [kompose2](https://github.com/skippbox/kompose2), development will cease and continue over in the kompose2 repository.
+
 ===============================
 [![Build Status](https://travis-ci.org/skippbox/kompose.svg?branch=kcompose)](https://travis-ci.org/skippbox/kompose)
 
